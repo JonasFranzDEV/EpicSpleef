@@ -1,0 +1,5 @@
+name: EpicSpleef
+version: 1.0
+author: BtoBastian
+main: de.oppermann.bastian.spleef.SpleefMain
+softdepend: [Multiverse-Core, Multiverse]

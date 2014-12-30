@@ -1,0 +1,32 @@
+# true if the arena should be enabled
+enable: false
+# The world of the arena
+world: world
+# There are two types of arenas: normal and bowspleef
+mode: normal
+# The minimum amount of players
+minPlayers: 2
+# Each arena has an group. This is for advanced settings
+group: default
+# TODO
+lobby: exampleLobby
+# If you want to create a low gravity spleef you can modify gravity. This is an experimental feature
+modifygravity:
+  # true if gravity modification should be enabled
+  enable: false
+  # The gravity. Don't use a value < 0. Values bigger than 1 will increase the gravity which could be buggy.
+  gravity: 0.3
+# The spawnlocations. Use ingame commands to modify it.
+spawnlocs:
+  1:
+    x: 0
+    y: 1
+    z: 0
+    yaw: 0
+    pitch: 0
+# The blocks of the arena. Use ingame commands to modify it.
+blocks:
+  1:
+    x: 0
+    y: 0
+    z: 0
