@@ -32,6 +32,11 @@ public class SetValueArgument extends AbstractArgument {
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {
 		if (args.length == 4) {
+			
+			if (!player.hasPermission(getPermission())) {
+				return CommandResult.NO_PERMISSION;
+			}
+			
 			SpleefArena arena = null;
 			for (SpleefArena sArena : SpleefArena.getSpleefArenas()) {
 				if (sArena.getName().equals(args[1])) {

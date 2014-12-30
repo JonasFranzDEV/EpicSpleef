@@ -36,6 +36,11 @@ public class AddLobbySpawnlocArgument extends AbstractArgument {
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {		
 		if (args.length == 2) {
+			
+			if (!player.hasPermission(getPermission())) {
+				return CommandResult.NO_PERMISSION;
+			}
+			
 			Lobby lobby = null;
 			for (Lobby sLobby : Lobby.getLobbies()) {
 				if (sLobby.getName().equals(args[1])) {

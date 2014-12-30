@@ -29,6 +29,11 @@ public class StatsArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {
+		
+		if (!player.hasPermission(getPermission())) {
+			return CommandResult.NO_PERMISSION;
+		}
+		
 		InventoryOpenListener.allowOpening(true);
 		player.openInventory(GuiInventory.STATISTICS.createInventory(player));
 		InventoryOpenListener.allowOpening(false);

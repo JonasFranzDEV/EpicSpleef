@@ -34,6 +34,11 @@ public class JoinArgument extends AbstractArgument {
 		if (args.length > 2 || args.length < 1) {	// only 1 or 2 arguments are allowed
 			return CommandResult.ERROR;
 		}
+		
+		if (!player.hasPermission(getPermission())) {
+			return CommandResult.NO_PERMISSION;
+		}
+		
 		if (args.length == 1) {
 			player.openInventory(GuiInventory.JOIN.createInventory(player));
 			return CommandResult.SUCCESS;
