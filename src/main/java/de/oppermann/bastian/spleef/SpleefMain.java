@@ -1,6 +1,7 @@
 package de.oppermann.bastian.spleef;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -36,6 +37,7 @@ import de.oppermann.bastian.spleef.lobbycommands.AddLobbySpawnlocArgument;
 import de.oppermann.bastian.spleef.lobbycommands.CreateLobbyArgument;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.storage.StorageManager;
+import de.oppermann.bastian.spleef.util.Metrics;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.Validator;
@@ -70,7 +72,9 @@ public class SpleefMain extends JavaPlugin {
 		
 		instance = this;	// initialize instance field
 		
-		log(Level.INFO, "Enabling Spleef plugin by BtoBastian");		
+		log(Level.INFO, "Enabling spleef plugin by BtoBastian");	
+		
+		metrics();
 		
 		loadConfig();			// load the config
 		loadLanguageConfig();	// load the language config
@@ -104,6 +108,15 @@ public class SpleefMain extends JavaPlugin {
 	
 	private void test() {
 		// some testing
+	}
+	
+	private void metrics() {
+		try {
+	        Metrics metrics = new Metrics(this);
+	        metrics.start();
+	    } catch (IOException e) {
+	    	log(Level.INFO, "Failed to submit stats to metrics :/");
+	    }
 	}
 	
 	private void loadConfig() {

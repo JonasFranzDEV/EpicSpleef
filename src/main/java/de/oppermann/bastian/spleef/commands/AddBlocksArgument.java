@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,6 +19,7 @@ import de.oppermann.bastian.spleef.hooks.WorldEditHook;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PluginChecker;
+import de.oppermann.bastian.spleef.util.algorithm.FloodfillAlgorithm;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandResult;
@@ -99,6 +102,52 @@ public class AddBlocksArgument extends AbstractArgument {
 				accessor.saveConfig();
 				player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf((counter - blocks.size()))));
 			}
+			
+			// looking at
+			if (args[2].equalsIgnoreCase("lookingAt")) {
+				try {
+					@SuppressWarnings("deprecation")
+					Block block = player.getTargetBlock(null, 400);
+					if (block == null) {
+						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
+					} else if (block.getType() == Material.AIR) {
+						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
+					} else {
+						player.sendMessage(block.getType().name());
+						ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena);
+						ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(arena.getName());
+						ArrayList<SpleefBlock> arenaBlocks = arena.getBlocks();
+						for (int i = 0; i < arenaBlocks.size(); i++) {
+							accessor.getConfig().set("blocks." + (i + 1) + ".x", arenaBlocks.get(i).getX());
+							accessor.getConfig().set("blocks." + (i + 1) + ".y", arenaBlocks.get(i).getY());
+							accessor.getConfig().set("blocks." + (i + 1) + ".z", arenaBlocks.get(i).getZ());
+						}
+						accessor.saveConfig();
+						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf(blocks.size())));
+					}
+				} catch (IllegalStateException e) {
+					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
+				}		
+			}
+			
+			// standing on
+			if (args[2].equalsIgnoreCase("standingOn")) {
+				Block block = player.getLocation().getBlock().getRelative(0, -1, 0);
+				if (block.getType() != Material.AIR) {
+					ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena);
+					ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(arena.getName());
+					ArrayList<SpleefBlock> arenaBlocks = arena.getBlocks();
+					for (int i = 0; i < arenaBlocks.size(); i++) {
+						accessor.getConfig().set("blocks." + (i + 1) + ".x", arenaBlocks.get(i).getX());
+						accessor.getConfig().set("blocks." + (i + 1) + ".y", arenaBlocks.get(i).getY());
+						accessor.getConfig().set("blocks." + (i + 1) + ".z", arenaBlocks.get(i).getZ());
+					}
+					accessor.saveConfig();
+					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf(blocks.size())));
+				} else {
+					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
+				}
+			}
 			return CommandResult.SUCCESS;
 		}
 		return CommandResult.ERROR;	// should never happen
@@ -128,7 +177,8 @@ public class AddBlocksArgument extends AbstractArgument {
 		}
 		if (args.length == 3) {
 			list.add("worldedit");
-			list.add("lookingat");
+			list.add("lookingAt");
+			list.add("standingOn");
 		}
 		return list;
 	}
@@ -139,7 +189,7 @@ public class AddBlocksArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_BLOCKS + " " + Language.ARGUMENT_ARENA + " <worldedit/lookingat>", getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_BLOCKS + " " + Language.ARGUMENT_ARENA + " <worldedit/lookingAt/standingOn>", getDescription());
 	}
 
 }
