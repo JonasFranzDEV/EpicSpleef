@@ -53,7 +53,7 @@ public class MySQLConnector extends SQLConnector {
 				try {
 					closeConnection();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
+					// should not happen
 					e.printStackTrace();
 				}
 			}

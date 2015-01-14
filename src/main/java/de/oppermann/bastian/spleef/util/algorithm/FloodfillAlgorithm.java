@@ -25,8 +25,6 @@ public class FloodfillAlgorithm {
 
 		stack.push(new SimpleBlock(x, z));
 		
-		int counter = 0;
-		
 		while (!stack.empty()) {
 			SimpleBlock block = stack.pop();
 		 
@@ -36,7 +34,6 @@ public class FloodfillAlgorithm {
 					SpleefBlock spleefBlock = new SpleefBlock(block.getX(), y, block.getZ());
 					arena.addSpleefBlock(spleefBlock);
 					blocks.add(spleefBlock);
-					counter++;
 				}
 				
 				stack.push(new SimpleBlock(block.getX(), block.getZ() + 1));

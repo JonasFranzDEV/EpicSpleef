@@ -25,6 +25,9 @@ public enum Language {
 	COMMAND_SET_LOBBY("setLobby"),
 	COMMAND_SET_LOBBY_DESCRIPTION("Sets the lobby of the arena"),
 	
+	COMMAND_LEAVE("leave"),
+	COMMAND_LEAVE_DESCRIPTION("Attempts to leave the arena"),
+	
 	COMMAND_ADD_SPAWNLOCATION("addSpawnloc"),
 	COMMAND_ADD_SPAWNLOCATION_DESCRIPTION("Sets the location you are standing on as spawnlocation. This also includes yaw and pitch! Use the -lobby flag to add the spawnlocation for a lobby and not for an arena."),
 	COMMAND_ADD_SPAWNLOCATION_LOBBYFLAG("-lobby"),
@@ -33,10 +36,14 @@ public enum Language {
 	COMMAND_SETVALUE_DESCRIPTION("Sets a flag of the arena"),
 
 	// stuff
+	MUST_BE_IN_ARENA(ChatColor.RED + "You must be in an arena!"),
+	MUST_BE_IN_WORLD_OF_ARENA(ChatColor.RED + "You must be in the same world as the arena!"),	
 	NO_ARENA_WITH_NAME(ChatColor.RED + "There's no arena with the name " + ChatColor.GOLD + "%arena% " + ChatColor.RED + "!"),	
 	NO_LOBBY_WITH_NAME(ChatColor.RED + "There's no lobby with the name " + ChatColor.GOLD + "%lobby% " + ChatColor.RED + "!"),	
 	ALREADY_ARENA_WITH_NAME(ChatColor.RED + "There's already an arena with the name " + ChatColor.GOLD + "%arena% " + ChatColor.RED + "!"),
 	ALREADY_LOBBY_WITH_NAME(ChatColor.RED + "There's already a lobby with the name " + ChatColor.GOLD + "%lobby% " + ChatColor.RED + "!"),
+	
+	NO_COMMANDS_IN_ARENA(ChatColor.RED + "You can't execute this command while you're in an arena!"),
 
 	JOINED_ARENA(ChatColor.YELLOW + "Joined arena %arena%!"),
 	JOINED_ARENA_STATUS_WAITING_FOR_PLAYERS(ChatColor.RED + "Waiting for players... (%players%/%maxPlayers%)"),
@@ -93,9 +100,13 @@ public enum Language {
 	
 	// single words
 	ARGUMENT_ARENA("<arena>"),
+	ARGUMENT_ARENA_OPTIONAL("[arena]"),
 	ARGUMENT_LOBBY("<lobby>"),
+	ARGUMENT_LOBBY_OPTIONAL("[lobby]"),
 	ARGUMENT_FLAG("<flag>"),
+	ARGUMENT_FLAG_OPTIONAL("[flag]"),
 	ARGUMENT_VALUE("<value>"),
+	ARGUMENT_VALUE_OPTIONAL("[value]"),
 	
 	HELP_HEADLINE(ChatColor.BLUE + " Help for " + ChatColor.RED + "/%cmd% "),
 	WRONG_USAGE(ChatColor.RED + "Wrong usage! Please type " + ChatColor.GOLD + "/%cmd% ? " + ChatColor.RED + "for more information!"),

@@ -103,6 +103,11 @@ public class AddBlocksArgument extends AbstractArgument {
 				player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf((counter - blocks.size()))));
 			}
 			
+			// TODO check if player is in arena world for lookingAt and standingOn
+			if (player.getWorld() != arena.getWorld()) {
+				player.sendMessage(Language.MUST_BE_IN_WORLD_OF_ARENA.toString().replace("%arena%", arena.getName()));
+			}
+			
 			// looking at
 			if (args[2].equalsIgnoreCase("lookingAt")) {
 				try {
@@ -113,7 +118,6 @@ public class AddBlocksArgument extends AbstractArgument {
 					} else if (block.getType() == Material.AIR) {
 						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
 					} else {
-						player.sendMessage(block.getType().name());
 						ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena);
 						ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(arena.getName());
 						ArrayList<SpleefBlock> arenaBlocks = arena.getBlocks();

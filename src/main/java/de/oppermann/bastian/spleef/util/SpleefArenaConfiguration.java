@@ -1,5 +1,8 @@
 package de.oppermann.bastian.spleef.util;
 
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+
 import de.oppermann.bastian.spleef.arena.Lobby;
 
 public class SpleefArenaConfiguration {
@@ -37,6 +40,14 @@ public class SpleefArenaConfiguration {
 	private boolean hurtPlayers = false;
 	
 	private boolean freezePlayers = true;
+	
+	private boolean customInventory = false;
+	
+	private ItemStack[] customInventoryContents = new ItemStack[9*4];
+	
+	{
+		customInventoryContents[0] = new ItemStack(Material.DIAMOND_SPADE);	// default should be a shovel
+	}
 	
 	public SpleefArenaConfiguration() {
 		
@@ -168,6 +179,22 @@ public class SpleefArenaConfiguration {
 
 	public void setFreezePlayers(boolean freezePlayers) {
 		this.freezePlayers = freezePlayers;
+	}
+
+	public boolean hasCustomInventory() {
+		return customInventory;
+	}
+
+	public void setCustomInventory(boolean customInventory) {
+		this.customInventory = customInventory;
+	}
+
+	public ItemStack[] getCustomInventoryContents() {
+		return customInventoryContents;
+	}
+
+	public void setCustomInventoryContents(ItemStack[] inventoryContents) {
+		this.customInventoryContents = inventoryContents;
 	}
 
 }

@@ -19,6 +19,7 @@ import de.oppermann.bastian.spleef.commands.AddBlocksArgument;
 import de.oppermann.bastian.spleef.commands.AddSpawnlocArgument;
 import de.oppermann.bastian.spleef.commands.CreateArgument;
 import de.oppermann.bastian.spleef.commands.JoinArgument;
+import de.oppermann.bastian.spleef.commands.LeaveArgument;
 import de.oppermann.bastian.spleef.commands.SetLobbyArgument;
 import de.oppermann.bastian.spleef.commands.SetValueArgument;
 import de.oppermann.bastian.spleef.commands.StatsArgument;
@@ -27,6 +28,7 @@ import de.oppermann.bastian.spleef.listener.EntityDamageListener;
 import de.oppermann.bastian.spleef.listener.FoodLevelChangeListener;
 import de.oppermann.bastian.spleef.listener.InventoryClickListener;
 import de.oppermann.bastian.spleef.listener.InventoryOpenListener;
+import de.oppermann.bastian.spleef.listener.PlayerCommandPreprocessListener;
 import de.oppermann.bastian.spleef.listener.PlayerDropItemListener;
 import de.oppermann.bastian.spleef.listener.PlayerInteractListener;
 import de.oppermann.bastian.spleef.listener.PlayerMoveListener;
@@ -100,7 +102,7 @@ public class SpleefMain extends JavaPlugin {
 		try {	
 			StorageManager.getInstance().getSqlConnector().closeConnection();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			// should not happen
 			e.printStackTrace();
 		}
 		super.onDisable();
@@ -115,7 +117,7 @@ public class SpleefMain extends JavaPlugin {
 	        Metrics metrics = new Metrics(this);
 	        metrics.start();
 	    } catch (IOException e) {
-	    	log(Level.INFO, "Failed to submit stats to metrics :/");
+	    	log(Level.INFO, "Failed to submit stats to metrics :((");
 	    }
 	}
 	
@@ -141,6 +143,7 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new FoodLevelChangeListener(), this);
 		Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), this);
 		Bukkit.getPluginManager().registerEvents(new InventoryOpenListener(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerCommandPreprocessListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerDropItemListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerInteractListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(), this);
@@ -151,13 +154,14 @@ public class SpleefMain extends JavaPlugin {
 	
 	private void regCommands() {
 		// arena
-		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new JoinArgument());
-		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new StatsArgument());
-		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new CreateArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddSpawnlocArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddBlocksArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new CreateArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new JoinArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new LeaveArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetLobbyArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetValueArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new StatsArgument());
 		// lobby
 		SpleefCommand.createIfNotExist("spleefLobby", "spleefLobby").registerArgument(new CreateLobbyArgument());
 		SpleefCommand.createIfNotExist("spleefLobby", "spleefLobby").registerArgument(new AddLobbySpawnlocArgument());
@@ -269,7 +273,7 @@ public class SpleefMain extends JavaPlugin {
 				}
 				
 				ARENAS.put(name, arenaConfig);
-				log(Level.INFO, "Successfully loaded arena " + name + ". (world: " + world + ", blocks: " + blocksCounter + ", maxPlayers: " + spawnlocsCounter + ")");	
+				log(Level.INFO, "Successfully loaded arena " + name + ". (world: " + world + ", blocks: " + blocksCounter + ", maxPlayers: " + spawnlocsCounter + (lobby == null ? "" : ", lobby:" + lobby.getName()) + ")");	
 			}
 		}
 	}
@@ -294,6 +298,8 @@ public class SpleefMain extends JavaPlugin {
 	 * Gets the accessor for the arena.
 	 */
 	public ConfigAccessor getArenaAccessor(String arena) {
+		// validate parameters
+		Validator.validateNotNull(arena, "arena");
 		return ARENAS.get(arena);
 	}
 	
@@ -301,6 +307,8 @@ public class SpleefMain extends JavaPlugin {
 	 * Gets the accessor for the lobby.
 	 */
 	public ConfigAccessor getLobbyAccessor(String lobby) {
+		// validate parameters
+		Validator.validateNotNull(lobby, "lobby");
 		return LOBBIES.get(lobby);
 	}
 	
@@ -308,6 +316,9 @@ public class SpleefMain extends JavaPlugin {
 	 * Adds an accessor.
 	 */
 	public void addArenaConfiguration(String arena, ConfigAccessor accessor) {
+		// validate parameters
+		Validator.validateNotNull(arena, "arena");
+		Validator.validateNotNull(accessor, "accessor");
 		ARENAS.put(arena, accessor);
 	}
 	
@@ -315,6 +326,9 @@ public class SpleefMain extends JavaPlugin {
 	 * Adds an accessor.
 	 */
 	public void addLobbyConfiguration(String lobby, ConfigAccessor accessor) {
+		// validate parameters
+		Validator.validateNotNull(lobby, "lobby");
+		Validator.validateNotNull(accessor, "accessor");
 		LOBBIES.put(lobby, accessor);
 	}
 	

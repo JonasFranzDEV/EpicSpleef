@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -140,9 +141,18 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			GravityModifier.modifyGravity(player.getUniqueId(), CONFIGURATION.getGravity());
 		}
 		
-		player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE));	// TODO options in config
-		
-		// TODO option to freeze players
+		if (CONFIGURATION.hasCustomInventory()) {
+			player.getInventory().setContents(CONFIGURATION.getCustomInventoryContents());
+		} else {
+			if (!CONFIGURATION.isBowSpleef()) {
+				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE, 1));			
+			} else {
+				ItemStack bow = new ItemStack(Material.BOW);
+				bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+				player.getInventory().setItem(0, bow);
+				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));				
+			}
+		}
 	}
 	
 	private void startCountdown(boolean inLobby, int time) {

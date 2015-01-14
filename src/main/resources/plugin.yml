@@ -1,5 +1,5 @@
 name: EpicSpleef
-version: 0.0.3
+version: 0.0.4
 author: BtoBastian
 main: de.oppermann.bastian.spleef.SpleefMain
 softdepend: [Multiverse-Core, Multiverse]

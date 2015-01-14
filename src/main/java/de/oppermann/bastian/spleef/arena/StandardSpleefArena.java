@@ -7,7 +7,6 @@ public class StandardSpleefArena extends SpleefArena {
 
 	public StandardSpleefArena(String name, String world, SpleefArenaConfiguration configuration, ScoreboardConfiguration scoreboardConfiguration) {
 		super(name, world, configuration, scoreboardConfiguration);
-		// TODO Auto-generated constructor stub
 	}
 
 }
