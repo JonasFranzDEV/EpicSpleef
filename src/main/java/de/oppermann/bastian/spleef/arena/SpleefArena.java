@@ -24,6 +24,7 @@ import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerMemory;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
+import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
 import de.oppermann.bastian.spleef.util.TitleManager;
 import de.oppermann.bastian.spleef.util.Validator;
@@ -144,13 +145,22 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		if (CONFIGURATION.hasCustomInventory()) {
 			player.getInventory().setContents(CONFIGURATION.getCustomInventoryContents());
 		} else {
-			if (!CONFIGURATION.isBowSpleef()) {
-				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE, 1));			
-			} else {
+			if (CONFIGURATION.getMode() == SpleefMode.BOWSPLEEF) {
 				ItemStack bow = new ItemStack(Material.BOW);
 				bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
 				player.getInventory().setItem(0, bow);
-				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));				
+				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));	
+				
+			} else if (CONFIGURATION.getMode() == SpleefMode.SPLEGG) {
+				// TODO At the moment it's just a useless hoe and no awesome weapon ... :D
+				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_HOE, 1));
+				
+			} else if (CONFIGURATION.getMode() == SpleefMode.PIGSPLEEF) {
+				// TODO not implementet yet
+				
+			} else {
+				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE, 1));
+				
 			}
 		}
 	}

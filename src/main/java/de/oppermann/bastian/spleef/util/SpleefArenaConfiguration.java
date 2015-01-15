@@ -19,7 +19,7 @@ public class SpleefArenaConfiguration {
 	
 	private int maxSnowballs = 16;
 	
-	private boolean isBowSpleef = false;
+	private SpleefMode mode = SpleefMode.NORMAL;
 	
 	private byte antiCamping = (byte) 0;	// if snowballs are allowed anti camping is not necessary.
 	
@@ -93,12 +93,12 @@ public class SpleefArenaConfiguration {
 		this.maxSnowballs = maxSnowballs;
 	}
 
-	public boolean isBowSpleef() {
-		return isBowSpleef;
+	public SpleefMode getMode() {
+		return mode;
 	}
 
-	public void setBowSpleef(boolean isBowSpleef) {
-		this.isBowSpleef = isBowSpleef;
+	public void setMode(SpleefMode mode) {
+		this.mode = mode;
 	}
 
 	public byte getAntiCamping() {

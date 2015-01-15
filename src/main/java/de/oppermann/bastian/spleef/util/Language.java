@@ -70,7 +70,9 @@ public enum Language {
 	
 	SUCCESSFULLY_ADDED_SPAWNLOCATION(ChatColor.GREEN + "Added spawnlocation."),
 	
-	SUCCESSFULLY_SET_LOBBY(ChatColor.GREEN + "Set lobby."),	
+	SUCCESSFULLY_SET_LOBBY(ChatColor.GREEN + "Set lobby."),
+	
+	SUCCESSFULLY_SET_CUSTOMINVENTORY(ChatColor.GREEN + "Set custom inventory to your resent inventory and enabled it."),
 
 	SUCCESSFULLY_SET_VALUE(ChatColor.GREEN + "Set " + ChatColor.GOLD + "%flag%" + ChatColor.GREEN + " to " + ChatColor.GOLD + "%value%" + ChatColor.GREEN + "."),
 	UNKNOWN_FLAG(ChatColor.RED + "There's no flag called " + ChatColor.GOLD + "%flag" + ChatColor.RED + "."),
@@ -78,14 +80,24 @@ public enum Language {
 	
 	VALUE_MUST_BE_A_NUMBER(ChatColor.RED + "The value must be a number."),
 	
+	UNKNOWN_MODE(ChatColor.RED + "There's no mode with this name!"),
+	
 	// flags
 	FLAG_ENABLED("enabled"),
 	FLAG_SNOWBALLS_ENABLED("snowballsEnabled"),
 	FLAG_MAX_SNOWBALLS("maxSnowballs"),
+	FLAG_MODE("mode"),
+	FLAG_CUSTOMINVENTORY_ENABLED("customInventoryEnabled"),
+	FLAG_CUSTOMINVENTORY("customInventory"),
 	
-	// valued
+	// values
 	VALUE_TRUE("true"),
 	VALUE_FALSE("false"),
+	
+	VALUE_MODE_NORMAL("normal"),
+	VALUE_MODE_BOWSPLEEF("bowspleef"),
+	VALUE_MODE_SPLEGG("splegg"),
+	VALUE_MODE_PIGSPLEEF("pigspleef"),	
 	
 	// items
 	HIDE_PLAYERS_ITEM(ChatColor.LIGHT_PURPLE + "Hide players"),

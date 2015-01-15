@@ -6,12 +6,14 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Sets;
 
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.Language;
+import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandResult;
@@ -88,6 +90,64 @@ public class SetValueArgument extends AbstractArgument {
 				return CommandResult.SUCCESS;
 			}
 			
+			if (args[2].equalsIgnoreCase(Language.FLAG_MODE.toString())) {
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_NORMAL.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.NORMAL);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_NORMAL.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_BOWSPLEEF.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.BOWSPLEEF);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_BOWSPLEEF.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_SPLEGG.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.SPLEGG);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_SPLEGG.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_PIGSPLEEF.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.PIGSPLEEF);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_PIGSPLEEF.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
+				player.sendMessage(Language.UNKNOWN_MODE.toString());
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString())) {
+				boolean enabled = args[3].equalsIgnoreCase(Language.VALUE_TRUE.toString());
+				String strValue = enabled ? Language.VALUE_TRUE.toString() : Language.VALUE_FALSE.toString();
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_CUSTOMINVENTORY_ENABLED.toString()).replace("%value%", strValue));
+				
+				arena.getConfiguration().setCustomInventory(enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY.toString())) {				
+				ItemStack[] contents = player.getInventory().getContents();
+				for (int i = 0; i < contents.length; i++) {					
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.items." + i, contents[i]);					
+				}
+				
+				arena.getConfiguration().setCustomInventoryContents(contents);
+				arena.getConfiguration().setCustomInventory(true);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", true);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				player.sendMessage(Language.SUCCESSFULLY_SET_CUSTOMINVENTORY.toString());
+				return CommandResult.SUCCESS;
+			}
+			
 			player.sendMessage(Language.UNKNOWN_FLAG.toString().replace("%flag%", args[2]));
 			return CommandResult.SUCCESS;
 		}
@@ -120,9 +180,15 @@ public class SetValueArgument extends AbstractArgument {
 			list.add(Language.FLAG_ENABLED.toString());
 			list.add(Language.FLAG_SNOWBALLS_ENABLED.toString());
 			list.add(Language.FLAG_MAX_SNOWBALLS.toString());
+			list.add(Language.FLAG_MODE.toString());
+			list.add(Language.FLAG_CUSTOMINVENTORY.toString());
+			list.add(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString());
 		}
 		if (args.length == 4) {
-			if (args[2].equalsIgnoreCase(Language.FLAG_ENABLED.toString()) || args[3].equalsIgnoreCase(Language.FLAG_SNOWBALLS_ENABLED.toString())) {
+			if (args[2].equalsIgnoreCase(Language.FLAG_ENABLED.toString())
+				|| args[3].equalsIgnoreCase(Language.FLAG_SNOWBALLS_ENABLED.toString())
+				|| args[3].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString()))
+			{
 				list.add(Language.VALUE_TRUE.toString());
 				list.add(Language.VALUE_FALSE.toString());
 			}
@@ -133,6 +199,12 @@ public class SetValueArgument extends AbstractArgument {
 				list.add("16");
 				list.add("32");
 				list.add("64");
+			}
+			if (args[2].equalsIgnoreCase(Language.FLAG_MODE.toString())) {
+				list.add(Language.VALUE_MODE_NORMAL.toString());
+				list.add(Language.VALUE_MODE_BOWSPLEEF.toString());
+				list.add(Language.VALUE_MODE_PIGSPLEEF.toString());
+				list.add(Language.VALUE_MODE_SPLEGG.toString());
 			}
 		}
 		return list;

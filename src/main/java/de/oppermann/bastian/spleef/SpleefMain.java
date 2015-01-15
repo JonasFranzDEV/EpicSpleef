@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.oppermann.bastian.spleef.arena.Lobby;
@@ -42,6 +43,7 @@ import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.Metrics;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
+import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.Validator;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand;
 
@@ -233,6 +235,7 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setLobby(lobby);
 				
 				configuration.setDisabled(!arenaConfig.getConfig().getBoolean("enabled", true));
+				configuration.setMode(SpleefMode.valueOf(arenaConfig.getConfig().getString("mode", "normal").toUpperCase()));	// TODO check if mode is valid
 				configuration.setModifyGravity(arenaConfig.getConfig().getBoolean("modifygravity.enable", false));
 				configuration.setGravity(arenaConfig.getConfig().getDouble("modifygravity.gravity", 0.5D));
 				configuration.setEnableSnowballs(arenaConfig.getConfig().getBoolean("snowballs.enable", true));
@@ -240,6 +243,12 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setMinPlayers(arenaConfig.getConfig().getInt("minPlayers", 2));
 				configuration.setRequiredPlayersToStartountdown(arenaConfig.getConfig().getInt("requiredPlayersToStartCountdown", 2));
 				configuration.setFreezePlayers(arenaConfig.getConfig().getBoolean("freezePlayers", true));
+				configuration.setCustomInventory(arenaConfig.getConfig().getBoolean("customInventory.enabled"));
+				
+				ItemStack[] customInventoryContents = new ItemStack[9*4];
+				for (int i = 0; i < customInventoryContents.length; i++) {
+					customInventoryContents[i] = arenaConfig.getConfig().getItemStack("customInventory.items." + i);	// could be null but never mind :)
+				}
 				
 				// create the arena
 				SpleefArena arena = new StandardSpleefArena(name, world, configuration, defaultScoreboardConfiguration);

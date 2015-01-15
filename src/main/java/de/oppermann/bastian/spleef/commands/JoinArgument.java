@@ -94,7 +94,7 @@ public class JoinArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_JOIN + " " + Language.ARGUMENT_ARENA, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_JOIN + " " + Language.ARGUMENT_ARENA_OPTIONAL, getDescription());
 	}
 
 }

@@ -125,6 +125,7 @@ public class StorageManager {
 			accessor = new ConfigAccessor(SpleefMain.getInstance(), arena.getName() + ".yml", folder);
 			
 			accessor.getConfig().set("enabled", !arena.getConfiguration().isDisabled());
+			accessor.getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
 			accessor.getConfig().set("world", arena.getWorldName());
 			accessor.getConfig().set("lobby", arena.getConfiguration().getLobby() == null ? null : arena.getConfiguration().getLobby().getName());
 			accessor.getConfig().set("modifygravity.enable", arena.getConfiguration().modifyGravity());
