@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,10 +20,12 @@ import com.google.common.util.concurrent.FutureCallback;
 
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.util.GameStatus;
+import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.GravityModifier;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerMemory;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
+import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
@@ -46,6 +49,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	private final ArrayList<SpleefSpawnLocation> FREE_SPAWN_LOCATIONS = new ArrayList<>();	// the locations that are not in use
 	private final HashMap<UUID, SpleefSpawnLocation> USED_SPAWN_LOCATION = new HashMap<>();
 	private final HashMap<UUID, PlayerMemory> MEMORIES = new HashMap<>();
+	private final ArrayList<SimpleBlock> JOIN_SIGNS = new ArrayList<>();	// the join signs
 	
 	private final String NAME;	// an unique name for the arena
 	private final String WORLD;	// the world of the arena
@@ -128,10 +132,6 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		USED_SPAWN_LOCATION.put(player.getUniqueId(), spawnLoc);
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
-		System.out.println(player);
-		System.out.println(spawnLoc);
-		System.out.println(getWorld());
-		System.out.println(spawnLoc.toLocation(getWorld()));
 		player.teleport(spawnLoc.toLocation(getWorld()));
 		
 		if (player.getGameMode() != GameMode.SURVIVAL) {
@@ -152,11 +152,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));	
 				
 			} else if (CONFIGURATION.getMode() == SpleefMode.SPLEGG) {
-				// TODO At the moment it's just a useless hoe and no awesome weapon ... :D
 				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_HOE, 1));
 				
 			} else if (CONFIGURATION.getMode() == SpleefMode.PIGSPLEEF) {
-				// TODO not implementet yet
+				// TODO not implemented yet
 				
 			} else {
 				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE, 1));
@@ -194,6 +193,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					}
 					
 					Bukkit.getScheduler().cancelTask(ID[0]);
+					updateSigns(-1);
 					return;
 				}
 				
@@ -209,6 +209,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					}
 				}
 				
+				updateSigns(COUNTER[0]);
 				COUNTER[0]--;
 			}
 		}, 0L, 20L);
@@ -285,6 +286,42 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		
 		PLAYERS.add(player.getUniqueId());	// add the player
 		setScoreboard(player);	// must be after adding player to PLAYERS cause this is checked in the method
+		
+		updateSigns(-1);
+	}
+	
+	/**
+	 * Stops the game immediately.
+	 */
+	public void stopImmediately(GameStopReason reason) {
+		Validator.validateNotNull(reason, "reason");
+		for (UUID uuidPlayer : PLAYERS) {
+			Player player = Bukkit.getPlayer(uuidPlayer);
+			GravityModifier.resetGravity(uuidPlayer);
+			PlayerMemory memory = MEMORIES.get(uuidPlayer);
+			memory.restore(player);
+			switch (reason) {
+				case EDIT_ARENA:
+					player.sendMessage(Language.STOP_REASON_EDIT_ARENA.toString());
+					break;
+				case PLUGIN_DISABLED:
+					player.sendMessage(Language.STOP_REASON_PLUGIN_DISABLED.toString());
+					break;	
+				default:
+					// should never happen
+					player.sendMessage(ChatColor.RED + "Something strange happend! :(");
+					break;
+				}
+		}
+		PLAYERS.clear();
+		FREE_SPAWN_LOCATIONS.clear();
+		FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
+		USED_SPAWN_LOCATION.clear();
+		MEMORIES.clear();
+		fillArena(Material.SNOW_BLOCK, (byte) 0);
+		status = GameStatus.WAITING_FOR_PLAYERS;
+		playersAreInLobby = CONFIGURATION.getLobby() != null;
+		updateSigns(-1);
 	}
 	
 	/**
@@ -346,6 +383,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			}
 		}
 		
+		updateSigns(-1);
+		
 		if (getStatus() == GameStatus.ACTIVE) {
 			
 			// add loss to the playerstats
@@ -361,6 +400,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				}
 			});
 			
+			for (UUID uuidPlayer : PLAYERS) {
+				Bukkit.getPlayer(uuidPlayer).sendMessage(Language.PLAYER_ELIMINATED.toString().replace("%player%", player.getName()).replace("%prefix%", Language.PREFIX.toString()));
+			}
+			
 			if (PLAYERS.size() == 1) {
 				UUID winnerUUID = PLAYERS.get(0);
 				Player winner = Bukkit.getPlayer(winnerUUID);
@@ -368,8 +411,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				PlayerMemory winnerMemory = MEMORIES.get(winnerUUID);
 				winnerMemory.restore(winner);
 				
-				player.chat("Well played...");
-				winner.chat("Thx!");
+				player.sendMessage(Language.PLAYER_WON_GAME.toString().replace("%player%", winner.getName()));
+				winner.sendMessage(Language.PLAYER_WHO_WON.toString().replace("%player%", winner.getName()));
 				
 				// add win to the playerstats
 				SpleefPlayerStats.getPlayerStats(winnerUUID, new FutureCallback<SpleefPlayerStats>() {
@@ -395,6 +438,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				status = GameStatus.WAITING_FOR_PLAYERS;
 				playersAreInLobby = CONFIGURATION.getLobby() != null;
 				GravityModifier.resetGravity(winner.getUniqueId());
+				
+				updateSigns(-1);
 			}
 		}
 	}
@@ -437,6 +482,81 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			if (block.getY() < lowestBlock) {
 				lowestBlock = block.getY();
 			}
+		}
+	}
+	
+	/**
+	 * Adds a join sign.
+	 */
+	public boolean addJoinSign(Block block) {
+		if (!(block.getState() instanceof Sign)) {
+			return false;
+		}
+		
+		for (SimpleBlock simpleBlock : JOIN_SIGNS) {
+			if (simpleBlock.equalsRealBlock(block)) {
+				return false;
+			}
+		}
+		
+		JOIN_SIGNS.add(new SimpleBlock(block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
+		updateSigns(-1);	// could be -1, no one cares
+		return true;
+	}
+	
+	/**
+	 * Checks if a block is a join sign.
+	 */
+	public boolean isJoinSign(Block block) {
+		for (SimpleBlock signBlock : JOIN_SIGNS) {
+			if (signBlock.toBlock() != null && signBlock.toBlock().equals(block)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void updateSigns(int countdown) {
+		for (SimpleBlock simpleBlock : JOIN_SIGNS) {
+			if (!(simpleBlock.toBlock().getState() instanceof Sign)) {
+				continue;
+			}
+			Sign sign = (Sign) simpleBlock.toBlock().getState();
+			String[] lines = new String[4];
+			String type = "none";
+			
+			if (getStatus() == GameStatus.ACTIVE) {				
+				type = "inProgress";				
+			}
+			if (getStatus() == GameStatus.WAITING_FOR_PLAYERS) {
+				if (PLAYERS.size() >= SPAWNLOCATIONS.size()) {
+					type = "full";
+				} else {
+					type = "waitingForPlayers";
+				}
+			}
+			if (getStatus() == GameStatus.DISABLED) {
+				type = "disabled";
+			}
+			
+			
+			lines[0] = SpleefMain.getInstance().getConfig().getString("joinsigns." + type + ".lines.1");
+			lines[1] = SpleefMain.getInstance().getConfig().getString("joinsigns." + type + ".lines.2");
+			lines[2] = SpleefMain.getInstance().getConfig().getString("joinsigns." + type + ".lines.3");
+			lines[3] = SpleefMain.getInstance().getConfig().getString("joinsigns." + type + ".lines.4");	
+			for (int i = 0; i < lines.length; i++) {
+				if (lines[i] == null) {
+					continue;
+				}
+				String line = lines[i];
+				line = ChatColor.translateAlternateColorCodes('&', line);
+				line = line.replace("%arena%", this.getName());
+				line = line.replace("%players%", Integer.toString(PLAYERS.size()));
+				line = line.replace("%maxPlayers%", Integer.toString(SPAWNLOCATIONS.size()));
+				line = line.replace("%countdown%", Integer.toString(countdown));
+				sign.setLine(i, line.length() <= 16 ? line : line.substring(0, 16));
+			}	
+			sign.update();
 		}
 	}
 	
@@ -515,6 +635,17 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		ArrayList<SpleefBlock> blocks = new ArrayList<>();
 		for (SpleefBlock block : BLOCKS) {
 			blocks.add(new SpleefBlock(block.getX(), block.getY(), block.getZ()));
+		}
+		return blocks;
+	}
+	
+	/**
+	 * Gets the join signs of arena.
+	 */
+	public ArrayList<SimpleBlock> getJoinSigns() {
+		ArrayList<SimpleBlock> blocks = new ArrayList<>();
+		for (SimpleBlock block : JOIN_SIGNS) {
+			blocks.add(new SimpleBlock(block.getWorldName(), block.getX(), block.getY(), block.getZ()));
 		}
 		return blocks;
 	}

@@ -33,6 +33,31 @@ scoreboard:
   - '&4'
   - '&c&lTotal Losses'
   - '%totalLosses%'
+joinsigns:
+  waitingForPlayers:
+    lines:
+      1: '&l&9%arena%'
+      2: '&2JOINABLE'
+      3: '%players% / %maxPlayers%'
+      4: '&aClick to join'
+  full:
+    lines:
+      1: '&l&9%arena%'
+      2: '&4FULL'
+      3: '%players% / %maxPlayers%'
+      4: 'Countdown: &c%countdown%'
+  inProgress:
+    lines:
+      1: '&l&9%arena%'
+      2: '&4IN GAME'
+      3: '%players% / %maxPlayers%'
+      4: '&aClick to spectate'
+  disabled:
+    lines:
+      1: '&l&9%arena%'
+      2: '&cDISABLED'
+      3: ''
+      4: ''
 stats:
   enable: true
 expertsOnly:

@@ -6,6 +6,8 @@ import de.oppermann.bastian.spleef.SpleefMain;
 
 public enum Language {
 	
+	PREFIX(ChatColor.RED + "\u25CF" + ChatColor.GOLD + " Spleef " + ChatColor.RED + "\u25CF" + ChatColor.BLUE + " | " + ChatColor.GRAY),
+	
 	// command stuff
 	COMMAND_JOIN("join"),
 	COMMAND_JOIN_DESCRIPTION("Attempts to join an arena with the given name"),
@@ -34,6 +36,9 @@ public enum Language {
 	
 	COMMAND_SETVALUE("setValue"),
 	COMMAND_SETVALUE_DESCRIPTION("Sets a flag of the arena"),
+	
+	COMMAND_ADD_JOIN_SIGN("addJoinSign"),
+	COMMAND_ADD_JOIN_SIGN_DESCRIPTION("Sets the block you are looking at as a join sign"),
 
 	// stuff
 	MUST_BE_IN_ARENA(ChatColor.RED + "You must be in an arena!"),
@@ -82,6 +87,20 @@ public enum Language {
 	
 	UNKNOWN_MODE(ChatColor.RED + "There's no mode with this name!"),
 	
+	STOP_REASON_PLUGIN_DISABLED(ChatColor.RED + "The game was canceled cause there was a restart or reload."),
+	STOP_REASON_EDIT_ARENA(ChatColor.RED + "The game was canceled cause someone edited the arena."),
+	
+	MUST_LOOK_AT_SIGN(ChatColor.RED + "You must look at a sign."),
+	ALREADY_JOIN_SIGN(ChatColor.RED + "This block is already a join sign!"),
+	SUCCESSFULLY_ADDED_JOIN_SIGN(ChatColor.GREEN + "Added join sign."),
+	SUCCESSFULLY_DESTROYED_JOIN_SIGN(ChatColor.GREEN + "Destroyed join sign."),
+	
+	// stuff
+	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player% has been eliminated!"),
+	
+	PLAYER_WON_GAME("%prefix%" + ChatColor.GREEN + "%player%" + ChatColor.GRAY + "won the game!"),
+	PLAYER_WHO_WON("%prefix%" + ChatColor.GREEN + "Congratulations!"),
+	
 	// flags
 	FLAG_ENABLED("enabled"),
 	FLAG_SNOWBALLS_ENABLED("snowballsEnabled"),
@@ -121,9 +140,11 @@ public enum Language {
 	ARGUMENT_VALUE_OPTIONAL("[value]"),
 	
 	HELP_HEADLINE(ChatColor.BLUE + " Help for " + ChatColor.RED + "/%cmd% "),
-	WRONG_USAGE(ChatColor.RED + "Wrong usage! Please type " + ChatColor.GOLD + "/%cmd% ? " + ChatColor.RED + "for more information!"),
+	WRONG_USAGE(ChatColor.RED + "Wrong usage! Please type " + ChatColor.GOLD + "/%cmd% ?"),
 	ONLY_PLAYER("This command is only for players!"),
-	NO_PERMISSION(ChatColor.RED + "You are not allowed to use this command!");
+	NO_PERMISSION(ChatColor.RED + "You are not allowed to use this command!");	
+
+	final String PREFIX_STRING = ChatColor.RED + "\u25CF" + ChatColor.GOLD + " Spleef " + ChatColor.RED + "\u25CF" + ChatColor.BLUE + " | " + ChatColor.GRAY;
 	
 	private String defaultText;
 	private String path;
@@ -146,14 +167,18 @@ public enum Language {
 			throw new IllegalStateException("The language file is not ready!");
 		}
 		
-		this.defaultText = defaultText.replaceAll("ง((?i)[0-9a-fk-or])", "&$1").replace("\n", "%n");	// replace the ChatColors with &-colorcodes
+		this.defaultText = defaultText.replaceAll("\u00A7((?i)[0-9a-fk-or])", "&$1").replace("\n", "%n");	// replace the ChatColors with &-colorcodes	
+		
 		this.path = path;
 		
 		SpleefMain.getInstance().getLanguageConfigAccessor().getConfig().addDefault(path, this.defaultText);
+		this.defaultText = this.defaultText.replace("%prefix%", SpleefMain.getInstance().getLanguageConfigAccessor().getConfig().getString("prefix", PREFIX_STRING.replaceAll("ยง((?i)[0-9a-fk-or])", "&$1")));
+		this.defaultText = defaultText.replaceAll("\u00A7((?i)[0-9a-fk-or])", "&$1").replace("\n", "%n");
 		SpleefMain.getInstance().getLanguageConfigAccessor().getConfig().options().copyDefaults(true);
 		SpleefMain.getInstance().getLanguageConfigAccessor().saveConfig();
 		this.text = SpleefMain.getInstance().getLanguageConfigAccessor().getConfig().getString(path, this.defaultText);
-		this.text = this.text.replaceAll("&((?i)[0-9a-fk-or])", "ง$1").replace("%n", "\n");	// replace the &-colorcodes with the ChatColor
+		this.text = this.text.replace("%prefix%", SpleefMain.getInstance().getLanguageConfigAccessor().getConfig().getString("prefix", PREFIX_STRING));	
+		this.text = this.text.replaceAll("&((?i)[0-9a-fk-or])", "\u00A7$1").replace("%n", "\n");	// replace the &-colorcodes with the ChatColor	
 	}
 	
 	/**

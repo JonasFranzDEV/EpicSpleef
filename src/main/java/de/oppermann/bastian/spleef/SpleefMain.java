@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +18,7 @@ import de.oppermann.bastian.spleef.arena.SpleefBlock;
 import de.oppermann.bastian.spleef.arena.SpleefSpawnLocation;
 import de.oppermann.bastian.spleef.arena.StandardSpleefArena;
 import de.oppermann.bastian.spleef.commands.AddBlocksArgument;
+import de.oppermann.bastian.spleef.commands.AddJoinSignArgument;
 import de.oppermann.bastian.spleef.commands.AddSpawnlocArgument;
 import de.oppermann.bastian.spleef.commands.CreateArgument;
 import de.oppermann.bastian.spleef.commands.JoinArgument;
@@ -40,8 +42,10 @@ import de.oppermann.bastian.spleef.lobbycommands.AddLobbySpawnlocArgument;
 import de.oppermann.bastian.spleef.lobbycommands.CreateLobbyArgument;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.storage.StorageManager;
+import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.Metrics;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
+import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.Validator;
@@ -100,6 +104,9 @@ public class SpleefMain extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
+		for (SpleefArena arena : SpleefArena.getSpleefArenas()) {
+			arena.stopImmediately(GameStopReason.PLUGIN_DISABLED);
+		}
 		StorageManager.getInstance().getListeningExecutorService().shutdown();
 		try {	
 			StorageManager.getInstance().getSqlConnector().closeConnection();
@@ -156,8 +163,9 @@ public class SpleefMain extends JavaPlugin {
 	
 	private void regCommands() {
 		// arena
-		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddSpawnlocArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddBlocksArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddJoinSignArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddSpawnlocArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new CreateArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new JoinArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new LeaveArgument());
@@ -278,6 +286,27 @@ public class SpleefMain extends JavaPlugin {
 						float pitch = (float) arenaConfig.getConfig().getDouble("spawnlocs." + loc + ".pitch");
 						arena.addSpawnLocation(new SpleefSpawnLocation(x, y, z, yaw, pitch));
 						spawnlocsCounter++;
+					}
+				}
+				
+				ConfigurationSection signsSection = arenaConfig.getConfig().getConfigurationSection("joinsigns");
+				// add blocks
+				if (signsSection != null) {
+					for (String sign : signsSection.getKeys(false)) {
+						String signWorld = arenaConfig.getConfig().getString("joinsigns." + sign + ".world", arena.getWorldName());
+						int x = arenaConfig.getConfig().getInt("joinsigns." + sign + ".x");
+						int y = arenaConfig.getConfig().getInt("joinsigns." + sign + ".y");
+						int z = arenaConfig.getConfig().getInt("joinsigns." + sign + ".z");
+						SimpleBlock simpleSignBlock = new SimpleBlock(signWorld, x, y, z);
+						if (simpleSignBlock.getWorld() == null) {
+							log(Level.SEVERE, "Could not load joinsign in world " + signWorld + " at " + x + ", " + y + ", " + z + " cause the world does not exist!");
+							continue;
+						}
+						if (!(simpleSignBlock.toBlock().getState() instanceof Sign)) {
+							log(Level.SEVERE, "Could not load joinsign in world " + signWorld + " at " + x + ", " + y + ", " + z + " cause there is no sign!");
+							continue;
+						}
+						arena.addJoinSign(simpleSignBlock.toBlock());
 					}
 				}
 				
