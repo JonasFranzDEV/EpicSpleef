@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -26,6 +27,7 @@ import de.oppermann.bastian.spleef.commands.LeaveArgument;
 import de.oppermann.bastian.spleef.commands.SetLobbyArgument;
 import de.oppermann.bastian.spleef.commands.SetValueArgument;
 import de.oppermann.bastian.spleef.commands.StatsArgument;
+import de.oppermann.bastian.spleef.commands.UpdateArgument;
 import de.oppermann.bastian.spleef.listener.BlockBreakListener;
 import de.oppermann.bastian.spleef.listener.EntityDamageListener;
 import de.oppermann.bastian.spleef.listener.FoodLevelChangeListener;
@@ -42,12 +44,14 @@ import de.oppermann.bastian.spleef.lobbycommands.AddLobbySpawnlocArgument;
 import de.oppermann.bastian.spleef.lobbycommands.CreateLobbyArgument;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.storage.StorageManager;
+import de.oppermann.bastian.spleef.util.EpicSpleefVersion;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.Metrics;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
+import de.oppermann.bastian.spleef.util.UpdateChecker;
 import de.oppermann.bastian.spleef.util.Validator;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand;
 
@@ -71,30 +75,35 @@ public class SpleefMain extends JavaPlugin {
 	
 	private ConfigAccessor languageConfigAccessor;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.bukkit.plugin.java.JavaPlugin#onEnable()
 	 */
 	@Override
 	public void onEnable() {
-		long currentTimeMillisStart = System.currentTimeMillis();	// get time at the beginning
-		
-		instance = this;	// initialize instance field
-		
-		log(Level.INFO, "Enabling spleef plugin by BtoBastian");	
-		
-		metrics();
-		
-		loadConfig();			// load the config
-		loadLanguageConfig();	// load the language config
-		regListener();			// register listener
-		regCommands();			// register commands
-		loadLobbies();			// load the lobbies
-		loadArenas();			// load the arenas
-		loadStats();			// load the stats
-		
-		test(); // run some tests
-		
-		long timeTook = System.currentTimeMillis() - currentTimeMillisStart;	// calculate time took to enable the plugin
+		long currentTimeMillisStart = System.currentTimeMillis(); // get time at  the  beginning
+
+		instance = this; // initialize instance field
+
+		log(Level.INFO, "Enabling spleef plugin by BtoBastian");
+
+		metrics(); // metrics stuff
+
+		// update
+		update(getConfig().getBoolean("auto-update.check", true), getConfig().getBoolean("auto-update.update", true), getConfig().getBoolean("auto-update.unsafeUpdates", false));
+
+		loadConfig(); // load the config
+		loadLanguageConfig(); // load the language config
+		regListener(); // register listener
+		regCommands(); // register commands
+		loadLobbies(); // load the lobbies
+		loadArenas(); // load the arenas
+		loadStats(); // load the stats
+
+		loadClassesRequiredForDisable(); // you need to do this, or the plugin will crash on restart if someone replaced the .jar file.
+
+		long timeTook = System.currentTimeMillis() - currentTimeMillisStart; // calculate time took  to enable the plugin
 		log(Level.INFO, "Enabling took " + timeTook + " milliseconds");
 		super.onEnable();
 	}
@@ -114,12 +123,36 @@ public class SpleefMain extends JavaPlugin {
 			// should not happen
 			e.printStackTrace();
 		}
+		for (Entry<String, SpleefCommand> command : SpleefCommand.getAllCommands()) {
+			command.getValue().unregister();
+		}
 		super.onDisable();
 	}
 	
-	private void test() {
-		// some testing
+	private void loadClassesRequiredForDisable() {
+		GameStopReason.class.getClassLoader();
 	}
+	
+	private void update(final boolean check, final boolean update, final boolean unsafeUpdates) {
+		if (!check) {
+			return;
+		}
+		new Thread(new Runnable() {			
+			@Override
+			public void run() {
+				EpicSpleefVersion newest = UpdateChecker.getNewestVersion(unsafeUpdates);
+				
+				if (newest == null) {
+					log(Level.INFO, "No update found...");
+				} else {
+					log(Level.INFO, "New update avaiable: " + newest.getVersionFileName());
+					if (update) {
+						UpdateChecker.downloadFile(newest, true, null);
+					}
+				}
+			}
+		}).start();
+	}	
 	
 	private void metrics() {
 		try {
@@ -172,6 +205,7 @@ public class SpleefMain extends JavaPlugin {
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetLobbyArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetValueArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new StatsArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new UpdateArgument());
 		// lobby
 		SpleefCommand.createIfNotExist("spleefLobby", "spleefLobby").registerArgument(new CreateLobbyArgument());
 		SpleefCommand.createIfNotExist("spleefLobby", "spleefLobby").registerArgument(new AddLobbySpawnlocArgument());
@@ -395,6 +429,14 @@ public class SpleefMain extends JavaPlugin {
 		getLogger().log(level, msg);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.bukkit.plugin.java.JavaPlugin#getFile()
+	 */
+	@Override
+	public File getFile() {	// make method public
+		return super.getFile();
+	}
+
 	/**
 	 * Returns an initialized instance of the plugin.
 	 */

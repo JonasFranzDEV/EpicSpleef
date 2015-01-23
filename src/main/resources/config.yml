@@ -17,7 +17,12 @@
 #####################################################################
 #####################################################################
 mainSettings:
-  languagefile: lang_en.yml
+  languagefile: lang.yml
+auto-update:
+  check: true
+  update: true
+# If unsafeUpdates are enabled it will also download plugins versions for higher game versions. If not it will just download the plugin if the game-version fits even if there's a newer version of the plugin.
+  unsafeUpdates: false
 scoreboard:
   - '&a&lWins'
   - '%wins%'

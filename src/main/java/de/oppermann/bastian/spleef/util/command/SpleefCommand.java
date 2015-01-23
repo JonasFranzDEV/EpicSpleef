@@ -1,8 +1,6 @@
 package de.oppermann.bastian.spleef.util.command;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.util.ChatUtil;
+import de.oppermann.bastian.spleef.util.CraftBukkitUtil;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.Validator;
 
@@ -34,35 +32,11 @@ public class SpleefCommand extends Command {
 
 	private static final HashMap<String, SpleefCommand> COMMANDS = new HashMap<>();	// the commands
 	
-	private static boolean nmsFailed = false;
-	
-	private static Class<?> CLASS_CRAFT_PLAYER;				// should be final but java sucks
-	private static Class<?> CLASS_PACKET_PLAY_OUT_CHAT;		// should be final but java sucks
-	private static Class<?> CLASS_CHAT_SERIALIZER;			// should be final but java sucks
-	private static Class<?> CLASS_I_CHAT_BASE_COMPONENT;	// should be final but java sucks
-	private static Class<?> CLASS_PACKET;					// should be final but java sucks
-	
-	private static String VERSION;	// the craftbukkit version (should also be final but ...)
-
+	private static final String VERSION;	// the craftbukkit version
 	static {
 		String path = Bukkit.getServer().getClass().getPackage().getName();
 		VERSION = path.substring(path.lastIndexOf(".") + 1, path.length());
-		
-		try {
-			CLASS_CRAFT_PLAYER = Class.forName("org.bukkit.craftbukkit." + VERSION + ".entity.CraftPlayer");
-			CLASS_PACKET_PLAY_OUT_CHAT = Class.forName("net.minecraft.server." + VERSION + ".PacketPlayOutChat");
-			CLASS_CHAT_SERIALIZER = Class.forName("net.minecraft.server." + VERSION + ".ChatSerializer");
-			CLASS_I_CHAT_BASE_COMPONENT = Class.forName("net.minecraft.server." + VERSION + ".IChatBaseComponent");
-			CLASS_PACKET = Class.forName("net.minecraft.server." + VERSION + ".Packet");
-		} catch (ClassNotFoundException e) {
-			// incompatible version
-			SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality.");
-			nmsFailed = true;
-		}
-
 	}
-	
-	
 
 	protected final JavaPlugin PLUGIN;
 	protected final String COMMAND;
@@ -102,7 +76,7 @@ public class SpleefCommand extends Command {
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
-	}
+	}	
 
 	/*
 	 * (non-Javadoc)
@@ -239,6 +213,31 @@ public class SpleefCommand extends Command {
 	public String getPermission() {
 		return PERMISSION;
 	}
+	
+	/**
+	 * Unregisters the command.
+	 */
+	public void unregister() {	
+		try {
+			Field fMap = Command.class.getDeclaredField("commandMap");
+			fMap.setAccessible(true);
+			CommandMap map = (CommandMap) fMap.get(this);
+			this.unregister(map);
+			
+			Field fKnownCommands = map.getClass().getDeclaredField("knownCommands");
+			fKnownCommands.setAccessible(true);
+			@SuppressWarnings("unchecked")
+			HashMap<String, Command> knownCommands = (HashMap<String, Command>) fKnownCommands.get(map);
+			for (Entry<String, Command> entry : knownCommands.entrySet()) {
+				if (entry.getValue() == this) {
+					knownCommands.remove(entry.getKey());
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	
 	
 	/*========== static stuff ==========*/
 	
@@ -407,7 +406,7 @@ public class SpleefCommand extends Command {
 					partLength += ChatUtil.getStringWidth(part);
 				}
 				
-				String suggestCommand = "/" + command;
+				String suggestCommand = command;
 					
 				final String JSON = 
 					"{\"text\":\"\",\"extra\":[{\"text\":\""
@@ -418,26 +417,9 @@ public class SpleefCommand extends Command {
 					+ strBuilder.toString() +
 					"\"}]}}}]}";
 				
-				if (!nmsFailed) {
-					try {
-						Object entityPlayer = CLASS_CRAFT_PLAYER.getMethod("getHandle").invoke(sender);
-						Object playerConnection = entityPlayer.getClass().getField("playerConnection").get(entityPlayer);					
-						Method sendPacketMethod = playerConnection.getClass().getMethod("sendPacket", CLASS_PACKET);
-						Object iChatBaseComponent = CLASS_CHAT_SERIALIZER.getMethod("a", String.class).invoke(playerConnection, JSON);
-						Object packetPlayOutChat = CLASS_PACKET_PLAY_OUT_CHAT.getConstructor(CLASS_I_CHAT_BASE_COMPONENT).newInstance(iChatBaseComponent);
-						
-						// send packet to the player
-						sendPacketMethod.invoke(playerConnection, packetPlayOutChat);
-					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | NoSuchFieldException | InstantiationException e) {
-						// incompatible version
-						SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality.");
-						// send the player the message without the tooltip
-						sender.sendMessage(shortDescription);
-						nmsFailed = true;
-					}
-				} else {
+				if (!(sender instanceof Player) || !CraftBukkitUtil.sendJSONText((Player) sender, JSON)) {
 					sender.sendMessage(shortDescription);
-				}								
+				}
 			} else {			
 				sender.sendMessage(getText().replace("%cmd%", command));				
 			}	// end if

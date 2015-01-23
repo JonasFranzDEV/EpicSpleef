@@ -84,6 +84,7 @@ public class PlayerMemory {
 		if (resetInventory) {
 			player.getInventory().setContents(INVENTORY_CONTENTS);
 			player.getInventory().setArmorContents(INVENTORY_ARMORCONTENTS);
+			player.updateInventory();
 		}
 		player.setDisplayName(DISPLAY_NAME);
 		player.setFallDistance(0F);

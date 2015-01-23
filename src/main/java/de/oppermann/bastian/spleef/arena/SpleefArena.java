@@ -124,6 +124,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		player.getInventory().setItem(6, GuiItem.SHOP.getItem());
 		player.getInventory().setItem(8, GuiItem.LEAVE_ARENA.getItem());			
 		player.getInventory().setHeldItemSlot(0);
+		player.updateInventory();
 	}
 	
 	private void teleportToArena(Player player) {
@@ -150,7 +151,6 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
 				player.getInventory().setItem(0, bow);
 				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));	
-				
 			} else if (CONFIGURATION.getMode() == SpleefMode.SPLEGG) {
 				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_HOE, 1));
 				
@@ -162,6 +162,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				
 			}
 		}
+		player.updateInventory();
 	}
 	
 	private void startCountdown(boolean inLobby, int time) {

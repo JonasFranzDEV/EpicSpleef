@@ -39,6 +39,13 @@ public enum Language {
 	
 	COMMAND_ADD_JOIN_SIGN("addJoinSign"),
 	COMMAND_ADD_JOIN_SIGN_DESCRIPTION("Sets the block you are looking at as a join sign"),
+	
+	COMMAND_UPDATE("update"),
+	COMMAND_UPDATE_DESCRIPTION("Lists all avaiable versions/updates, Downloads the latest version or installs it."),
+	COMMAND_UPDATE_ARGUMENT_LISTUPDATES("listUpdates"),
+	COMMAND_UPDATE_ARGUMENT_LISTALLVERSIONS("listAllVersions"),
+	COMMAND_UPDATE_ARGUMENT_DOWNLOAD("download"),
+	COMMAND_UPDATE_ARGUMENT_INSTALL("install"),
 
 	// stuff
 	MUST_BE_IN_ARENA(ChatColor.RED + "You must be in an arena!"),
@@ -93,12 +100,23 @@ public enum Language {
 	MUST_LOOK_AT_SIGN(ChatColor.RED + "You must look at a sign."),
 	ALREADY_JOIN_SIGN(ChatColor.RED + "This block is already a join sign!"),
 	SUCCESSFULLY_ADDED_JOIN_SIGN(ChatColor.GREEN + "Added join sign."),
-	SUCCESSFULLY_DESTROYED_JOIN_SIGN(ChatColor.GREEN + "Destroyed join sign."),
+	SUCCESSFULLY_DESTROYED_JOIN_SIGN(ChatColor.GREEN + "Destroyed join sign."),	
+
+	UPDATE_VERSIONLIST_HEAD(ChatColor.GREEN + "----------------------- " + ChatColor.RED + "Versions" + ChatColor.GREEN + " ---------------------"),
+	UPDATE_VERSIONLIST_VALUE(ChatColor.GOLD + " - " + ChatColor.GRAY + "Version %pluginVersion% for %gameVersion%"),
+	UPDATE_VERSIONLIST_POPUP(ChatColor.GOLD + "Click to copy update-command for " + ChatColor.LIGHT_PURPLE + "%pluginVersion%" + ChatColor.GOLD + "."),
+	UPDATE_VERSIONLIST_BOTTOM(ChatColor.GREEN + "-------------------- " + ChatColor.AQUA + "Click a version" + ChatColor.GREEN + " -------------------"),
+	
+	UPDATE_UNKNOWN_VERSION(ChatColor.RED + "Unknown version!"),
+	UPDATE_NO_NEW_VERSION(ChatColor.GREEN + "No updates available. :)"),
+	UPDATE_NO_NEW_VERSION_BUT_UNSAFE(ChatColor.RED + "There's an update, but for a newer gameversion (%gameVersion%).%n" + ChatColor.RED + "Type " + ChatColor.GOLD + "%updateCommand%" + ChatColor.RED + " to update!"),
+	UPDATE_DOWNLOAD_SUCCESSFULLY_NOW_INSTALL(ChatColor.GREEN + "Successfully downloaded plugin. Restarting now!"),
+	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin.!"),
 	
 	// stuff
 	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player% has been eliminated!"),
 	
-	PLAYER_WON_GAME("%prefix%" + ChatColor.GREEN + "%player%" + ChatColor.GRAY + "won the game!"),
+	PLAYER_WON_GAME("%prefix%" + ChatColor.GREEN + "%player%" + ChatColor.GRAY + " won the game!"),
 	PLAYER_WHO_WON("%prefix%" + ChatColor.GREEN + "Congratulations!"),
 	
 	// flags
@@ -128,6 +146,11 @@ public enum Language {
 	STATUS_WAITING_FOR_PLAYERS(ChatColor.GREEN + "Waiting for players"),
 	STATUS_ACTIVE(ChatColor.RED + "Game running"),
 	STATUS_DISABLED(ChatColor.RED + "Disabled"),
+	
+	// for update
+	UPDATE_PROGRESS(ChatColor.GREEN + "Downloading update: %percentage%%. (%downloaded% KB / %total% KB"),
+	UPDATE_ERROR(ChatColor.RED + "An error occured while downloading file!"),
+	UPDATE_NO_UPDATES(ChatColor.RED + "No updates found!"),
 	
 	// single words
 	ARGUMENT_ARENA("<arena>"),
