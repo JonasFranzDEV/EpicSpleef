@@ -10,6 +10,10 @@ import org.bukkit.entity.Player;
 import com.google.common.collect.Sets;
 
 import de.oppermann.bastian.spleef.arena.SpleefArena;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
@@ -57,7 +61,17 @@ public class JoinArgument extends AbstractArgument {
 				return CommandResult.SUCCESS;
 			}
 			
-			arena.join(player);	// TODO check for some stuff
+			try {
+				arena.join(player);
+			} catch (SpleefArenaNotWaitingForPlayersException e) {
+				player.sendMessage(Language.CAN_NOT_JOIN_GAME_ACTIVE.toString().replace("%arena%", arena.getName()));
+			} catch (SpleefArenaIsFullException e) {
+				player.sendMessage(Language.CAN_NOT_JOIN_ARENA_FULL.toString().replace("%arena%", arena.getName()));
+			} catch (SpleefArenaIsDisabledException e) {
+				player.sendMessage(Language.CAN_NOT_JOIN_ARENA_DISABLED.toString().replace("%arena%", arena.getName()));
+			} catch (SpleefArenaMisconfiguredException e) {
+				player.sendMessage(Language.CAN_NOT_JOIN_ARENA_MISCONFIGURED.toString().replace("%arena%", arena.getName()));
+			}
 			return CommandResult.SUCCESS;
 		}
 		return CommandResult.ERROR;	// should never happen

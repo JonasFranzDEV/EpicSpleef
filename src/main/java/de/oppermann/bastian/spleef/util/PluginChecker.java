@@ -8,4 +8,8 @@ public class PluginChecker {
 		return Bukkit.getPluginManager().getPlugin("WorldEdit") != null;
 	}
 	
+	public static boolean vaultIsLoaded() {
+		return Bukkit.getPluginManager().getPlugin("Vault") != null;
+	}
+	
 }

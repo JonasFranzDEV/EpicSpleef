@@ -55,6 +55,12 @@ public enum Language {
 	ALREADY_ARENA_WITH_NAME(ChatColor.RED + "There's already an arena with the name " + ChatColor.GOLD + "%arena% " + ChatColor.RED + "!"),
 	ALREADY_LOBBY_WITH_NAME(ChatColor.RED + "There's already a lobby with the name " + ChatColor.GOLD + "%lobby% " + ChatColor.RED + "!"),
 	
+	CAN_NOT_JOIN_ARENA_FULL(ChatColor.RED + "The arena is full!"),
+	CAN_NOT_JOIN_ARENA_DISABLED(ChatColor.RED + "The arena is disabled!"),
+	CAN_NOT_JOIN_GAME_ACTIVE(ChatColor.RED + "The game is already running!"),
+	CAN_NOT_JOIN_NO_PERMISSION(ChatColor.RED + "You are not allowed to join %arena%!"),
+	CAN_NOT_JOIN_ARENA_MISCONFIGURED(ChatColor.RED + "The arena is misconfigured!"),
+	
 	NO_COMMANDS_IN_ARENA(ChatColor.RED + "You can't execute this command while you're in an arena!"),
 
 	JOINED_ARENA(ChatColor.YELLOW + "Joined arena %arena%!"),
@@ -114,7 +120,7 @@ public enum Language {
 	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin.!"),
 	
 	// stuff
-	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player% has been eliminated!"),
+	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player%" + ChatColor.GRAY + " has been eliminated!"),
 	
 	PLAYER_WON_GAME("%prefix%" + ChatColor.GREEN + "%player%" + ChatColor.GRAY + " won the game!"),
 	PLAYER_WHO_WON("%prefix%" + ChatColor.GREEN + "Congratulations!"),

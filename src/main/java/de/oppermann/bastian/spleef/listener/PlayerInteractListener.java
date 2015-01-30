@@ -11,6 +11,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.oppermann.bastian.spleef.arena.SpleefArena;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerManager;
@@ -54,7 +58,7 @@ public class PlayerInteractListener implements Listener {
 							InventoryOpenListener.allowOpening(false);
 							break;
 						case HIDE_PLAYERS:
-							player.sendMessage(Language.PREFIX.toString() + ChatColor.RED + "You should better hide yourself... (not implementet yet)");
+							player.sendMessage(ChatColor.RED + "Not implemented yet, sorry ...");
 							break;
 						case SHOP:
 							InventoryOpenListener.allowOpening(true);
@@ -71,7 +75,18 @@ public class PlayerInteractListener implements Listener {
 				if (event.getClickedBlock().getState() instanceof Sign) {
 					for (SpleefArena arenas : SpleefArena.getSpleefArenas()) {
 						if (arenas.isJoinSign(event.getClickedBlock())) {
-							arenas.join(event.getPlayer());	// TODO check some stuff
+							Player player = event.getPlayer();
+							try {
+								arenas.join(player);
+							} catch (SpleefArenaNotWaitingForPlayersException e) {
+								player.sendMessage(Language.CAN_NOT_JOIN_GAME_ACTIVE.toString().replace("%arena%", arenas.getName()));
+							} catch (SpleefArenaIsFullException e) {
+								player.sendMessage(Language.CAN_NOT_JOIN_ARENA_FULL.toString().replace("%arena%", arenas.getName()));
+							} catch (SpleefArenaIsDisabledException e) {
+								player.sendMessage(Language.CAN_NOT_JOIN_ARENA_DISABLED.toString().replace("%arena%", arenas.getName()));
+							} catch (SpleefArenaMisconfiguredException e) {
+								player.sendMessage(Language.CAN_NOT_JOIN_ARENA_MISCONFIGURED.toString().replace("%arena%", arenas.getName()));
+							}
 						}
 					}
 				}

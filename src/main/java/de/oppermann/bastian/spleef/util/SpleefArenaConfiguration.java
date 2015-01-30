@@ -49,6 +49,14 @@ public class SpleefArenaConfiguration {
 		customInventoryContents[0] = new ItemStack(Material.DIAMOND_SPADE);	// default should be a shovel
 	}
 	
+	private int pointsWinningReward = 50;
+	
+	private int moneyWinningReward = 50;
+	
+	private int pointsParticipationReward = 10;
+	
+	private int moneyParticipationReward = 10;
+	
 	public SpleefArenaConfiguration() {
 		
 	}
@@ -195,6 +203,38 @@ public class SpleefArenaConfiguration {
 
 	public void setCustomInventoryContents(ItemStack[] inventoryContents) {
 		this.customInventoryContents = inventoryContents;
+	}
+
+	public int getPointsWinningReward() {
+		return pointsWinningReward;
+	}
+
+	public void setPointsWinningReward(int pointsWinningReward) {
+		this.pointsWinningReward = pointsWinningReward;
+	}
+
+	public int getMoneyWinningReward() {
+		return moneyWinningReward;
+	}
+
+	public void setMoneyWinningReward(int moneyWinningReward) {
+		this.moneyWinningReward = moneyWinningReward;
+	}
+
+	public int getPointsParticipationReward() {
+		return pointsParticipationReward;
+	}
+
+	public void setPointsParticipationReward(int pointsParticipationReward) {
+		this.pointsParticipationReward = pointsParticipationReward;
+	}
+
+	public int getMoneyParticipationReward() {
+		return moneyParticipationReward;
+	}
+
+	public void setMoneyParticipationReward(int moneyParticipationReward) {
+		this.moneyParticipationReward = moneyParticipationReward;
 	}
 
 }

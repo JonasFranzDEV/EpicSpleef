@@ -7,6 +7,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
 import de.oppermann.bastian.spleef.arena.SpleefArena;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
+import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerManager;
 import de.oppermann.bastian.spleef.util.gui.GuiInventory;
 
@@ -28,8 +33,18 @@ public class InventoryClickListener implements Listener {
 				if (compare(event.getClickedInventory(), GuiInventory.getLastCreatedInventory(event.getWhoClicked().getUniqueId()))) {
 					SpleefArena arena = GuiInventory.getArena(event.getSlot());
 					if (arena != null) {
-						// TODO check some stuff
-						arena.join((Player) event.getWhoClicked());
+						Player player = (Player) event.getWhoClicked();
+						try {
+							arena.join(player);
+						} catch (SpleefArenaNotWaitingForPlayersException e) {
+							player.sendMessage(Language.CAN_NOT_JOIN_GAME_ACTIVE.toString().replace("%arena%", arena.getName()));
+						} catch (SpleefArenaIsFullException e) {
+							player.sendMessage(Language.CAN_NOT_JOIN_ARENA_FULL.toString().replace("%arena%", arena.getName()));
+						} catch (SpleefArenaIsDisabledException e) {
+							player.sendMessage(Language.CAN_NOT_JOIN_ARENA_DISABLED.toString().replace("%arena%", arena.getName()));
+						} catch (SpleefArenaMisconfiguredException e) {
+							player.sendMessage(Language.CAN_NOT_JOIN_ARENA_MISCONFIGURED.toString().replace("%arena%", arena.getName()));
+						}
 					}
 				}
 			}

@@ -47,6 +47,7 @@ import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.EpicSpleefVersion;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.Metrics;
+import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
@@ -100,6 +101,10 @@ public class SpleefMain extends JavaPlugin {
 		loadLobbies(); // load the lobbies
 		loadArenas(); // load the arenas
 		loadStats(); // load the stats
+		
+		if (!PluginChecker.vaultIsLoaded()) {
+			log(Level.INFO, "Could not find Vault. Money rewards won't work. :(");
+		}
 
 		loadClassesRequiredForDisable(); // you need to do this, or the plugin will crash on restart if someone replaced the .jar file.
 
@@ -286,6 +291,10 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setRequiredPlayersToStartountdown(arenaConfig.getConfig().getInt("requiredPlayersToStartCountdown", 2));
 				configuration.setFreezePlayers(arenaConfig.getConfig().getBoolean("freezePlayers", true));
 				configuration.setCustomInventory(arenaConfig.getConfig().getBoolean("customInventory.enabled"));
+				configuration.setPointsWinningReward(arenaConfig.getConfig().getInt("reward.points.winning"));
+				configuration.setPointsParticipationReward(arenaConfig.getConfig().getInt("reward.points.participation"));
+				configuration.setMoneyWinningReward(arenaConfig.getConfig().getInt("reward.money.winning"));
+				configuration.setMoneyParticipationReward(arenaConfig.getConfig().getInt("reward.money.participation"));
 				
 				ItemStack[] customInventoryContents = new ItemStack[9*4];
 				for (int i = 0; i < customInventoryContents.length; i++) {

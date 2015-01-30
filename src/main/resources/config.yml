@@ -19,9 +19,11 @@
 mainSettings:
   languagefile: lang.yml
 auto-update:
+# Set 'check' to false to completely disable auto-updating. (You can still update the plugin with ingame commands)
   check: true
+# Set 'update' to false to disable downloading and updating newer versions automatically.
   update: true
-# If unsafeUpdates are enabled it will also download plugins versions for higher game versions. If not it will just download the plugin if the game-version fits even if there's a newer version of the plugin.
+# If 'unsafeUpdate' is set to false it will only check and download an update if the versions of your server and the plugins fits. (e.g. a plugin version for Minecraft 1.8.1 won't be installed on a server for 1.7.9; a plugin version for Minecraft 1.8.1 WILL be installed on a server for 1.8.0, cause this ignores the 3rd digit)
   unsafeUpdates: false
 scoreboard:
   - '&a&lWins'

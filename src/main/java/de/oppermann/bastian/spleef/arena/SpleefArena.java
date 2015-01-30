@@ -19,11 +19,17 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.util.concurrent.FutureCallback;
 
 import de.oppermann.bastian.spleef.SpleefMain;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
+import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
+import de.oppermann.bastian.spleef.hooks.VaultHook;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.GravityModifier;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerMemory;
+import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
@@ -240,7 +246,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 * 
 	 * @param player The player to add.
 	 */
-	public void join(Player player) {
+	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException {
 		Validator.validateNotNull(player, "player");
 		
 		if (PLAYERS.contains(player.getUniqueId())) {	// a player can not join a arena twice. (YOU DONT SAY?!?)
@@ -248,15 +254,27 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 		
 		if (status != GameStatus.WAITING_FOR_PLAYERS) {	// the player cannot join at the moment
-			throw new IllegalStateException("The arena is not waiting for players to join");
+			throw new SpleefArenaNotWaitingForPlayersException("The arena is not waiting for players to join");
 		}
 		
 		if (SPAWNLOCATIONS.size() <= PLAYERS.size()) {
-			throw new IllegalStateException("The arena is full");
+			throw new SpleefArenaIsFullException("The arena is full");
 		}
 		
 		if (getConfiguration().isDisabled()) {
-			throw new IllegalStateException("The arena is disabled");
+			throw new SpleefArenaIsDisabledException("The arena is disabled");
+		}
+		
+		if (BLOCKS.isEmpty()) {
+			throw new SpleefArenaMisconfiguredException("The arena has no blocks");
+		}
+		
+		if (PLAYERS.size() < 2) {
+			throw new SpleefArenaMisconfiguredException("The arena has less than 2 spawnlocations");
+		}
+		
+		if (getConfiguration().getRequiredPlayersToStartCountdown() < 2) {
+			throw new SpleefArenaMisconfiguredException("The required players to start can't be less than 2");
 		}
 		
 		MEMORIES.put(player.getUniqueId(), new PlayerMemory(player));
@@ -398,8 +416,13 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				@Override
 				public void onSuccess(SpleefPlayerStats stats) {
 					stats.addLosses(getName(), 1);
+					stats.addPoints(getName(), CONFIGURATION.getPointsParticipationReward());
 				}
 			});
+			
+			if (PluginChecker.vaultIsLoaded()) {
+				VaultHook.getEconomy().depositPlayer(player, CONFIGURATION.getMoneyParticipationReward());
+			}
 			
 			for (UUID uuidPlayer : PLAYERS) {
 				Bukkit.getPlayer(uuidPlayer).sendMessage(Language.PLAYER_ELIMINATED.toString().replace("%player%", player.getName()).replace("%prefix%", Language.PREFIX.toString()));
@@ -425,9 +448,14 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					@Override
 					public void onSuccess(SpleefPlayerStats stats) {
 						stats.addWins(getName(), 1);
+						stats.addPoints(getName(), CONFIGURATION.getPointsWinningReward());
 						// TODO add points
 					}
 				});
+				
+				if (PluginChecker.vaultIsLoaded()) {
+					VaultHook.getEconomy().depositPlayer(winner, CONFIGURATION.getMoneyWinningReward());
+				}				
 				
 				// reset arena
 				PLAYERS.clear();

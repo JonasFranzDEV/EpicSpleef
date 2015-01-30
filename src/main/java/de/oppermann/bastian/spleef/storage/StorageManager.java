@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -135,6 +136,11 @@ public class StorageManager {
 			accessor.getConfig().set("minPlayers", arena.getConfiguration().getMinPlayers());
 			accessor.getConfig().set("requiredPlayersToStartCountdown", arena.getConfiguration().getRequiredPlayersToStartCountdown());
 			accessor.getConfig().set("freezePlayers", arena.getConfiguration().freezePlayers());
+			accessor.getConfig().set("customInventory.enabled", arena.getConfiguration().hasCustomInventory());
+			accessor.getConfig().set("reward.points.winning", arena.getConfiguration().getPointsWinningReward());
+			accessor.getConfig().set("reward.points.participation", arena.getConfiguration().getPointsParticipationReward());
+			accessor.getConfig().set("reward.money.winning", arena.getConfiguration().getMoneyWinningReward());
+			accessor.getConfig().set("reward.money.participation", arena.getConfiguration().getMoneyParticipationReward());
 			
 			int i = 1;
 			for (SpleefSpawnLocation spawnLocation : arena.getSpawnLocations()) {
@@ -153,6 +159,12 @@ public class StorageManager {
 				accessor.getConfig().set("blocks." + i + ".z", block.getZ());
 				i++;
 			}
+			
+			i = 0;
+			for (ItemStack is : arena.getConfiguration().getCustomInventoryContents()) {
+				accessor.getConfig().set("customInventory.items." + i, is);
+				i++;
+			}			
 			
 			accessor.saveConfig();
 			SpleefMain.getInstance().addArenaConfiguration(arena.getName(), accessor);

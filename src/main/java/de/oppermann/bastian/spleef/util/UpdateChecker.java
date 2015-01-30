@@ -206,12 +206,13 @@ public class UpdateChecker {
 					@Override
 					public void run() {						
 						final File currentFile = SpleefMain.getInstance().getFile();
+						final String TO_PATH = SpleefMain.getInstance().getDataFolder().getParentFile().getPath() + File.separator + file.getName();
 						Bukkit.getPluginManager().disablePlugin(SpleefMain.getInstance());
 						new Thread(new Runnable() {						
 							@Override
 							public void run() {
 								currentFile.delete();
-								File to = new File(SpleefMain.getInstance().getDataFolder().getParentFile().getPath() + File.separator + file.getName());
+								File to = new File(TO_PATH);
 								try {
 									Files.move(file, to);
 								} catch (IOException e) {
