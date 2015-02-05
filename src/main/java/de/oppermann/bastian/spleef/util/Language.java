@@ -97,6 +97,7 @@ public enum Language {
 	INVALID_VALUE(ChatColor.RED + "Invalid value."),
 	
 	VALUE_MUST_BE_A_NUMBER(ChatColor.RED + "The value must be a number."),
+	VALUE_MUST_BE_A_NUMBER_BETWEEN_0_AND_1(ChatColor.RED + "The value must be a number between 0 and 1 (e.g. 0.5)."),
 	
 	UNKNOWN_MODE(ChatColor.RED + "There's no mode with this name!"),
 	
@@ -117,7 +118,9 @@ public enum Language {
 	UPDATE_NO_NEW_VERSION(ChatColor.GREEN + "No updates available. :)"),
 	UPDATE_NO_NEW_VERSION_BUT_UNSAFE(ChatColor.RED + "There's an update, but for a newer gameversion (%gameVersion%).%n" + ChatColor.RED + "Type " + ChatColor.GOLD + "%updateCommand%" + ChatColor.RED + " to update!"),
 	UPDATE_DOWNLOAD_SUCCESSFULLY_NOW_INSTALL(ChatColor.GREEN + "Successfully downloaded plugin. Restarting now!"),
-	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin.!"),
+	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin!"),
+	
+	UNKNOWN_ENTITY(ChatColor.RED + "There's no (valid) entity with this name!"),
 	
 	// stuff
 	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player%" + ChatColor.GRAY + " has been eliminated!"),
@@ -132,6 +135,17 @@ public enum Language {
 	FLAG_MODE("mode"),
 	FLAG_CUSTOMINVENTORY_ENABLED("customInventoryEnabled"),
 	FLAG_CUSTOMINVENTORY("customInventory"),
+	FLAG_VEHICLE("vehicle"),
+	FLAG_INSTANT_BLOCK_DESTORY("instantBlockDestroy"),
+	FLAG_REWARD_MONEY_WINNING("rewardMoneyWinning"),
+	FLAG_REWARD_POINTS_WINNING("rewardPointsWinning"),
+	FLAG_REWARD_MONEY_PARTICIPATION("rewardMoneyParticipation"),
+	FLAG_REWARD_POINTS_PARTICIPATION("rewardPointsParticipation"),
+	FLAG_FREEZE_PLAYERS("freezePlayers"),
+	FLAG_MODIFY_GRAVITY("modifyGravity"),
+	FLAG_GRAVITY("gravity"),
+	FLAG_MIN_PLAYERS("minPlayers"),
+	FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN("requiredPlayersToStartCountdown"),
 	
 	// values
 	VALUE_TRUE("true"),
@@ -139,8 +153,7 @@ public enum Language {
 	
 	VALUE_MODE_NORMAL("normal"),
 	VALUE_MODE_BOWSPLEEF("bowspleef"),
-	VALUE_MODE_SPLEGG("splegg"),
-	VALUE_MODE_PIGSPLEEF("pigspleef"),	
+	VALUE_MODE_SPLEGG("splegg"),	
 	
 	// items
 	HIDE_PLAYERS_ITEM(ChatColor.LIGHT_PURPLE + "Hide players"),

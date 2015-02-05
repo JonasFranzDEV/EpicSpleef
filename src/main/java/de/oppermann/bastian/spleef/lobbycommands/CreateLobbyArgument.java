@@ -85,7 +85,7 @@ public class CreateLobbyArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_CREATELOBBY + " " + Language.ARGUMENT_ARENA, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_CREATELOBBY + " " + Language.ARGUMENT_LOBBY, getDescription());
 	}
 
 }

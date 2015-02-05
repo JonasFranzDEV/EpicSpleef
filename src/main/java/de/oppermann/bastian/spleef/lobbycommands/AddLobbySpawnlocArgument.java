@@ -108,7 +108,7 @@ public class AddLobbySpawnlocArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_SPAWNLOCATION + " " + Language.ARGUMENT_ARENA, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_SPAWNLOCATION + " " + Language.ARGUMENT_LOBBY, getDescription());
 	}
 
 }

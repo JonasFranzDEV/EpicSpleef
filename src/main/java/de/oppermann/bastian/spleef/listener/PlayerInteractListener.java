@@ -9,6 +9,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+
+import com.google.common.util.concurrent.FutureCallback;
 
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
@@ -18,6 +21,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersExc
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerManager;
+import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
 import de.oppermann.bastian.spleef.util.gui.GuiInventory;
 import de.oppermann.bastian.spleef.util.gui.GuiItem;
 
@@ -27,12 +31,24 @@ public class PlayerInteractListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		SpleefArena arena = PlayerManager.getArena(event.getPlayer().getUniqueId());
 		if (arena != null) {
-			
-			if (event.getAction() == Action.LEFT_CLICK_BLOCK && arena.isArenaBlock(event.getClickedBlock()) && arena.getStatus() == GameStatus.ACTIVE) {
-				//event.getClickedBlock().setType(Material.AIR);	// TODO option to enable instant remove
-				//if (arena.getConfiguration().isEnableSnowballs()) {
-					//event.getPlayer().getInventory().addItem(new ItemStack(Material.SNOW_BALL));
-				//}
+			Player player = event.getPlayer();
+			if (arena.getConfiguration().instanstBlockDestroy() && event.getAction() == Action.LEFT_CLICK_BLOCK && arena.isArenaBlock(event.getClickedBlock()) && arena.getStatus() == GameStatus.ACTIVE) {
+				event.getClickedBlock().setType(Material.AIR);	// TODO option to enable instant remove
+				if (arena.getConfiguration().isEnableSnowballs()) {
+					player.getInventory().addItem(new ItemStack(Material.SNOW_BALL));
+					final SpleefArena ARENA = arena;
+					SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+						@Override
+						public void onFailure(Throwable e) {
+							e.printStackTrace();
+						}
+
+						@Override
+						public void onSuccess(SpleefPlayerStats stats) {
+							stats.addDestroyedBlocks(ARENA.getName(), 1);
+						}
+					});
+				}
 			}
 			
 			// TODO check status and don't cancel it if the game is running
@@ -47,7 +63,6 @@ public class PlayerInteractListener implements Listener {
 				}
 				GuiItem item = GuiItem.getByItemStack(event.getItem());
 				if (item != null) {
-					Player player = event.getPlayer();
 					switch (item) {
 						case LEAVE_ARENA:
 							arena.removePlayer(player);

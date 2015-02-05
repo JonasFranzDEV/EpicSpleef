@@ -1,6 +1,7 @@
 package de.oppermann.bastian.spleef.util;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
 import de.oppermann.bastian.spleef.arena.Lobby;
@@ -56,6 +57,10 @@ public class SpleefArenaConfiguration {
 	private int pointsParticipationReward = 10;
 	
 	private int moneyParticipationReward = 10;
+	
+	private EntityType vehicle = null;
+	
+	private boolean instanstBlockDestroy = false;
 	
 	public SpleefArenaConfiguration() {
 		
@@ -235,6 +240,22 @@ public class SpleefArenaConfiguration {
 
 	public void setMoneyParticipationReward(int moneyParticipationReward) {
 		this.moneyParticipationReward = moneyParticipationReward;
+	}
+
+	public EntityType getVehicle() {
+		return vehicle;
+	}
+
+	public void setVehicle(EntityType vehicle) {
+		this.vehicle = vehicle;
+	}
+
+	public boolean instanstBlockDestroy() {
+		return instanstBlockDestroy;
+	}
+
+	public void setInstanstBlockDestroy(boolean instanstBlockDestroy) {
+		this.instanstBlockDestroy = instanstBlockDestroy;
 	}
 
 }

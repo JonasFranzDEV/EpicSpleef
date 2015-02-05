@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,6 +30,7 @@ import de.oppermann.bastian.spleef.commands.SetValueArgument;
 import de.oppermann.bastian.spleef.commands.StatsArgument;
 import de.oppermann.bastian.spleef.commands.UpdateArgument;
 import de.oppermann.bastian.spleef.listener.BlockBreakListener;
+import de.oppermann.bastian.spleef.listener.EntityDamageByEntityListener;
 import de.oppermann.bastian.spleef.listener.EntityDamageListener;
 import de.oppermann.bastian.spleef.listener.FoodLevelChangeListener;
 import de.oppermann.bastian.spleef.listener.InventoryClickListener;
@@ -39,7 +41,6 @@ import de.oppermann.bastian.spleef.listener.PlayerInteractListener;
 import de.oppermann.bastian.spleef.listener.PlayerMoveListener;
 import de.oppermann.bastian.spleef.listener.PlayerQuitListener;
 import de.oppermann.bastian.spleef.listener.ProjectileHitListener;
-import de.oppermann.bastian.spleef.listener.TestListener;
 import de.oppermann.bastian.spleef.lobbycommands.AddLobbySpawnlocArgument;
 import de.oppermann.bastian.spleef.lobbycommands.CreateLobbyArgument;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
@@ -47,6 +48,7 @@ import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.EpicSpleefVersion;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.Metrics;
+import de.oppermann.bastian.spleef.util.PlayerDismountCheckTask;
 import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
@@ -94,6 +96,7 @@ public class SpleefMain extends JavaPlugin {
 		// update
 		update(getConfig().getBoolean("auto-update.check", true), getConfig().getBoolean("auto-update.update", true), getConfig().getBoolean("auto-update.unsafeUpdates", false));
 
+		runTasks();	// run tasks
 		loadConfig(); // load the config
 		loadLanguageConfig(); // load the language config
 		regListener(); // register listener
@@ -110,6 +113,7 @@ public class SpleefMain extends JavaPlugin {
 
 		long timeTook = System.currentTimeMillis() - currentTimeMillisStart; // calculate time took  to enable the plugin
 		log(Level.INFO, "Enabling took " + timeTook + " milliseconds");
+		
 		super.onEnable();
 	}
 
@@ -157,7 +161,11 @@ public class SpleefMain extends JavaPlugin {
 				}
 			}
 		}).start();
-	}	
+	}
+	
+	private void runTasks() {
+		Bukkit.getScheduler().runTaskTimer(this, new PlayerDismountCheckTask(), 1, 1);
+	}
 	
 	private void metrics() {
 		try {
@@ -187,6 +195,7 @@ public class SpleefMain extends JavaPlugin {
 	private void regListener() {
 		Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), this);
 		Bukkit.getPluginManager().registerEvents(new EntityDamageListener(), this);
+		Bukkit.getPluginManager().registerEvents(new EntityDamageByEntityListener(), this);
 		Bukkit.getPluginManager().registerEvents(new FoodLevelChangeListener(), this);
 		Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), this);
 		Bukkit.getPluginManager().registerEvents(new InventoryOpenListener(), this);
@@ -196,7 +205,6 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
 		Bukkit.getPluginManager().registerEvents(new ProjectileHitListener(), this);
-		Bukkit.getPluginManager().registerEvents(new TestListener(), this);
 	}
 	
 	private void regCommands() {
@@ -295,6 +303,12 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setPointsParticipationReward(arenaConfig.getConfig().getInt("reward.points.participation"));
 				configuration.setMoneyWinningReward(arenaConfig.getConfig().getInt("reward.money.winning"));
 				configuration.setMoneyParticipationReward(arenaConfig.getConfig().getInt("reward.money.participation"));
+				try {
+					configuration.setVehicle(arenaConfig.getConfig().getString("vehicle") == null? null : EntityType.valueOf(arenaConfig.getConfig().getString("vehicle").toUpperCase()));
+				} catch(IllegalArgumentException e) {
+					// unknown vehicle or "none"
+				}
+				configuration.setInstanstBlockDestroy(arenaConfig.getConfig().getBoolean("instanstBlockDestroy", false));
 				
 				ItemStack[] customInventoryContents = new ItemStack[9*4];
 				for (int i = 0; i < customInventoryContents.length; i++) {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -12,7 +14,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -28,12 +30,13 @@ import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.GravityModifier;
 import de.oppermann.bastian.spleef.util.Language;
+import de.oppermann.bastian.spleef.util.PetMaker;
+import de.oppermann.bastian.spleef.util.PlayerDismountCheckTask;
 import de.oppermann.bastian.spleef.util.PlayerMemory;
 import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
-import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
 import de.oppermann.bastian.spleef.util.TitleManager;
 import de.oppermann.bastian.spleef.util.Validator;
@@ -152,20 +155,22 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		if (CONFIGURATION.hasCustomInventory()) {
 			player.getInventory().setContents(CONFIGURATION.getCustomInventoryContents());
 		} else {
-			if (CONFIGURATION.getMode() == SpleefMode.BOWSPLEEF) {
-				ItemStack bow = new ItemStack(Material.BOW);
-				bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-				player.getInventory().setItem(0, bow);
-				player.getInventory().setItem(8, new ItemStack(Material.ARROW, 1));	
-			} else if (CONFIGURATION.getMode() == SpleefMode.SPLEGG) {
-				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_HOE, 1));
-				
-			} else if (CONFIGURATION.getMode() == SpleefMode.PIGSPLEEF) {
-				// TODO not implemented yet
-				
-			} else {
-				player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SPADE, 1));
-				
+			for (ItemStack is : CONFIGURATION.getMode().getItems()) {
+				player.getInventory().addItem(is);
+			}
+			if (CONFIGURATION.getVehicle() != null) {
+				if (CONFIGURATION.getVehicle().isSpawnable()) {
+					final Player PLAYER = player;
+					Bukkit.getScheduler().runTaskLater(SpleefMain.getInstance(), new Runnable() {					
+						@Override
+						public void run() {
+							LivingEntity entity = (LivingEntity) PLAYER.getWorld().spawnEntity(PLAYER.getLocation(), CONFIGURATION.getVehicle());
+							entity.setPassenger(PLAYER);
+							PlayerDismountCheckTask.addDisallowedPlayer(PLAYER);
+							PetMaker.setGuide(entity, PLAYER);
+						}
+					}, 5);
+				}
 			}
 		}
 		player.updateInventory();
@@ -269,7 +274,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			throw new SpleefArenaMisconfiguredException("The arena has no blocks");
 		}
 		
-		if (PLAYERS.size() < 2) {
+		if (SPAWNLOCATIONS.size() < 2) {
 			throw new SpleefArenaMisconfiguredException("The arena has less than 2 spawnlocations");
 		}
 		
@@ -353,6 +358,12 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			throw new IllegalArgumentException("The player " + player.getName() + " is not in the arena");
 		}
 		
+		PlayerDismountCheckTask.removePlayer(player);
+		
+		if (player.getVehicle() != null) {
+			player.getVehicle().remove();
+		}
+		
 		SpleefSpawnLocation spawnLoc = USED_SPAWN_LOCATION.get(player.getUniqueId());
 		USED_SPAWN_LOCATION.remove(player.getUniqueId());
 		FREE_SPAWN_LOCATIONS.add(spawnLoc);
@@ -421,7 +432,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			});
 			
 			if (PluginChecker.vaultIsLoaded()) {
-				VaultHook.getEconomy().depositPlayer(player, CONFIGURATION.getMoneyParticipationReward());
+				Economy eco = VaultHook.getEconomy();
+				if (eco != null) {
+					eco.depositPlayer(player, CONFIGURATION.getMoneyParticipationReward());					
+				}
 			}
 			
 			for (UUID uuidPlayer : PLAYERS) {
@@ -431,6 +445,12 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			if (PLAYERS.size() == 1) {
 				UUID winnerUUID = PLAYERS.get(0);
 				Player winner = Bukkit.getPlayer(winnerUUID);
+				
+				PlayerDismountCheckTask.removePlayer(winner);
+				
+				if (winner.getVehicle() != null) {
+					winner.getVehicle().remove();
+				}
 				
 				PlayerMemory winnerMemory = MEMORIES.get(winnerUUID);
 				winnerMemory.restore(winner);
@@ -454,7 +474,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				});
 				
 				if (PluginChecker.vaultIsLoaded()) {
-					VaultHook.getEconomy().depositPlayer(winner, CONFIGURATION.getMoneyWinningReward());
+					Economy eco = VaultHook.getEconomy();
+					if (eco != null) {
+						eco.depositPlayer(winner, CONFIGURATION.getMoneyWinningReward());
+					}
 				}				
 				
 				// reset arena

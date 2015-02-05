@@ -14,9 +14,12 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
+import com.google.common.util.concurrent.FutureCallback;
+
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.PlayerManager;
+import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
 
 public class ProjectileHitListener implements Listener {
 	
@@ -26,7 +29,8 @@ public class ProjectileHitListener implements Listener {
 		
 		if (event.getEntity().getShooter() instanceof Player) {
 			shooter = (Player) event.getEntity().getShooter();
-		}		
+		}	
+		
 		if (shooter == null) {
 			return;
 		}
@@ -50,6 +54,21 @@ public class ProjectileHitListener implements Listener {
 		byte oldData = hittenBlock.getData();		
 		
 		hittenBlock.setType(Material.AIR);	// sets the block to air
+		
+		
+		final SpleefArena ARENA = arena;
+		SpleefPlayerStats.getPlayerStats(shooter.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+			@Override
+			public void onFailure(Throwable e) {
+				e.printStackTrace();
+			}
+	
+			@Override
+			public void onSuccess(SpleefPlayerStats stats) {
+				stats.addDestroyedBlocks(ARENA.getName(), 1);
+			}
+		});
+		
 		
 		@SuppressWarnings("deprecation")	// cause mojang sucks ...
 		final Entity fallingBlock = hittenBlock.getWorld().spawnFallingBlock(hittenBlock.getLocation().add(0, 0.01, 0), oldType, oldData);

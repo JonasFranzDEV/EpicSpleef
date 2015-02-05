@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -112,13 +113,6 @@ public class SetValueArgument extends AbstractArgument {
 					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
 					return CommandResult.SUCCESS;
 				}
-				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_PIGSPLEEF.toString())) {
-					arena.getConfiguration().setMode(SpleefMode.PIGSPLEEF);
-					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_PIGSPLEEF.toString()));
-					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
-					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
-					return CommandResult.SUCCESS;
-				}
 				player.sendMessage(Language.UNKNOWN_MODE.toString());
 				return CommandResult.SUCCESS;
 			}
@@ -145,6 +139,191 @@ public class SetValueArgument extends AbstractArgument {
 				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", true);
 				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
 				player.sendMessage(Language.SUCCESSFULLY_SET_CUSTOMINVENTORY.toString());
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_VEHICLE.toString())) {
+				if (args[3].equalsIgnoreCase("none")) {
+					arena.getConfiguration().setVehicle(null);
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("vehicle", "none");
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_VEHICLE.toString()).replace("%value%", "none"));			
+					return CommandResult.SUCCESS;
+				}
+				EntityType type;
+				try {
+					type = EntityType.valueOf(args[3].toUpperCase());
+				} catch (IllegalArgumentException e) {
+					player.sendMessage(Language.UNKNOWN_ENTITY.toString());
+					return CommandResult.SUCCESS;
+				}
+				if (!type.isSpawnable()) {
+					player.sendMessage(Language.UNKNOWN_ENTITY.toString());
+					return CommandResult.SUCCESS;
+				}
+				/* TODO
+				if (!type.getEntityClass().isAssignableFrom(LivingEntity.class)) {
+					player.sendMessage(Language.UNKNOWN_ENTITY.toString());
+					return CommandResult.SUCCESS;
+				}
+				*/
+				arena.getConfiguration().setVehicle(type);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("vehicle", type.name().toLowerCase());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_VEHICLE.toString()).replace("%value%", type.name().toLowerCase()));			
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_INSTANT_BLOCK_DESTORY.toString())) {
+				boolean enabled = args[3].equalsIgnoreCase(Language.VALUE_TRUE.toString());
+				String strValue = enabled ? Language.VALUE_TRUE.toString() : Language.VALUE_FALSE.toString();
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_INSTANT_BLOCK_DESTORY.toString()).replace("%value%", strValue));
+				
+				arena.getConfiguration().setInstanstBlockDestroy(enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("instantBlockDestroy", enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_REWARD_MONEY_PARTICIPATION.toString())) {
+				int reward;
+				try {
+					reward = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}				
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_REWARD_MONEY_PARTICIPATION.toString()).replace("%value%", String.valueOf(reward)));
+				
+				arena.getConfiguration().setMoneyParticipationReward(reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("reward.money.participation", reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_REWARD_MONEY_WINNING.toString())) {
+				int reward;
+				try {
+					reward = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}				
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_REWARD_MONEY_WINNING.toString()).replace("%value%", String.valueOf(reward)));
+				
+				arena.getConfiguration().setMoneyWinningReward(reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("reward.money.winning", reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_REWARD_POINTS_PARTICIPATION.toString())) {
+				int reward;
+				try {
+					reward = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}				
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_REWARD_POINTS_PARTICIPATION.toString()).replace("%value%", String.valueOf(reward)));
+				
+				arena.getConfiguration().setPointsParticipationReward(reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("reward.points.participation", reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_REWARD_POINTS_WINNING.toString())) {
+				int reward;
+				try {
+					reward = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}				
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_REWARD_POINTS_WINNING.toString()).replace("%value%", String.valueOf(reward)));
+				
+				arena.getConfiguration().setPointsWinningReward(reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("reward.points.winning", reward);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_FREEZE_PLAYERS.toString())) {
+				boolean enabled = args[3].equalsIgnoreCase(Language.VALUE_TRUE.toString());
+				String strValue = enabled ? Language.VALUE_TRUE.toString() : Language.VALUE_FALSE.toString();
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_FREEZE_PLAYERS.toString()).replace("%value%", strValue));
+				
+				arena.getConfiguration().setFreezePlayers(enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("freezePlayers", enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_MODIFY_GRAVITY.toString())) {
+				boolean enabled = args[3].equalsIgnoreCase(Language.VALUE_TRUE.toString());
+				String strValue = enabled ? Language.VALUE_TRUE.toString() : Language.VALUE_FALSE.toString();
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODIFY_GRAVITY.toString()).replace("%value%", strValue));
+				
+				arena.getConfiguration().setModifyGravity(enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("modifygravity.enable", enabled);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_GRAVITY.toString())) {
+				double gravity;
+				try {
+					gravity = Double.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER_BETWEEN_0_AND_1.toString());
+					return CommandResult.SUCCESS;
+				}
+				if (gravity <= 0 || gravity >= 1) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER_BETWEEN_0_AND_1.toString());
+					return CommandResult.SUCCESS;
+				}
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_GRAVITY.toString()).replace("%value%", String.valueOf(gravity)));
+				
+				arena.getConfiguration().setGravity(gravity);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("modifygravity.gravity", gravity);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_MIN_PLAYERS.toString())) {
+				int minPlayers;
+				try {
+					minPlayers = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}
+				
+				minPlayers = minPlayers < 2 ? 2 : minPlayers;	// must be at least 2
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MIN_PLAYERS.toString()).replace("%value%", String.valueOf(minPlayers)));
+				
+				arena.getConfiguration().setMinPlayers(minPlayers);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("minPlayers", minPlayers);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString())) {
+				int requiredPlayersToStartCountdown;
+				try {
+					requiredPlayersToStartCountdown = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}
+				
+				requiredPlayersToStartCountdown = requiredPlayersToStartCountdown < 2 ? 2 : requiredPlayersToStartCountdown;	// must be at least 2
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString()).replace("%value%", String.valueOf(requiredPlayersToStartCountdown)));
+				
+				arena.getConfiguration().setMinPlayers(requiredPlayersToStartCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("requiredPlayersToStartCountdown", requiredPlayersToStartCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
 				return CommandResult.SUCCESS;
 			}
 			
@@ -183,11 +362,25 @@ public class SetValueArgument extends AbstractArgument {
 			list.add(Language.FLAG_MODE.toString());
 			list.add(Language.FLAG_CUSTOMINVENTORY.toString());
 			list.add(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString());
+			list.add(Language.FLAG_VEHICLE.toString());
+			list.add(Language.FLAG_INSTANT_BLOCK_DESTORY.toString());
+			list.add(Language.FLAG_REWARD_MONEY_PARTICIPATION.toString());
+			list.add(Language.FLAG_REWARD_MONEY_WINNING.toString());
+			list.add(Language.FLAG_REWARD_POINTS_PARTICIPATION.toString());
+			list.add(Language.FLAG_REWARD_POINTS_WINNING.toString());
+			list.add(Language.FLAG_FREEZE_PLAYERS.toString());
+			list.add(Language.FLAG_MODIFY_GRAVITY.toString());
+			list.add(Language.FLAG_GRAVITY.toString());
+			list.add(Language.FLAG_MIN_PLAYERS.toString());
+			list.add(Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString());
 		}
 		if (args.length == 4) {
 			if (args[2].equalsIgnoreCase(Language.FLAG_ENABLED.toString())
-				|| args[3].equalsIgnoreCase(Language.FLAG_SNOWBALLS_ENABLED.toString())
-				|| args[3].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString()))
+				|| args[2].equalsIgnoreCase(Language.FLAG_SNOWBALLS_ENABLED.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY_ENABLED.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_INSTANT_BLOCK_DESTORY.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_FREEZE_PLAYERS.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_MODIFY_GRAVITY.toString()))
 			{
 				list.add(Language.VALUE_TRUE.toString());
 				list.add(Language.VALUE_FALSE.toString());
@@ -203,8 +396,49 @@ public class SetValueArgument extends AbstractArgument {
 			if (args[2].equalsIgnoreCase(Language.FLAG_MODE.toString())) {
 				list.add(Language.VALUE_MODE_NORMAL.toString());
 				list.add(Language.VALUE_MODE_BOWSPLEEF.toString());
-				list.add(Language.VALUE_MODE_PIGSPLEEF.toString());
 				list.add(Language.VALUE_MODE_SPLEGG.toString());
+			}
+			if (args[2].equalsIgnoreCase(Language.FLAG_VEHICLE.toString())) {
+				try {
+					list.add(EntityType.RABBIT.name().toLowerCase());
+				} catch (Exception e) {
+					// older versions of minecraft don't have rabbits :(
+				}
+				list.add(EntityType.VILLAGER.name().toLowerCase());
+				list.add(EntityType.PIG.name().toLowerCase());
+				list.add(EntityType.OCELOT.name().toLowerCase());
+				list.add(EntityType.SHEEP.name().toLowerCase());
+				list.add("none");				
+			}
+			if (args[2].equalsIgnoreCase(Language.FLAG_REWARD_MONEY_PARTICIPATION.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_REWARD_MONEY_WINNING.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_REWARD_POINTS_PARTICIPATION.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_REWARD_POINTS_WINNING.toString()))
+			{
+				list.add("0");
+				list.add("10");
+				list.add("25");
+				list.add("50");
+				list.add("100");
+				list.add("150");
+				list.add("200");
+				list.add("500");				
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_GRAVITY.toString())) {
+				list.add("0.25");
+				list.add("0.5");
+				list.add("0.75");
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_MIN_PLAYERS.toString())
+				|| args[2].equalsIgnoreCase(Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString()))
+			{
+				list.add("2");
+				list.add("4");
+				list.add("8");
+				list.add("12");
+				list.add("16");
 			}
 		}
 		return list;

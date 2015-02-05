@@ -13,26 +13,29 @@ public class VaultHook {
 	private static Economy economy = null;
 	private static Chat chat = null;
 	
-	static {
-		setupPermissions();
-		setupChat();
-		setupEconomy();
-	}
-	
 	public static Permission getPermission() {
+		if (permission == null) {
+			setupPermissions();
+		}
 		return permission;
 	}
 	
 	public static Economy getEconomy() {
+		if (economy == null) {
+			setupEconomy();
+		}
 		return economy;
 	}
 	
 	public static Chat getChat() {
+		if (chat == null) {
+			setupChat();
+		}
 		return chat;
 	}
 
 	private static boolean setupPermissions() {
-		RegisteredServiceProvider<Permission> permissionProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+		RegisteredServiceProvider<Permission> permissionProvider = Bukkit.getServicesManager().getRegistration(Permission.class);
 		if (permissionProvider != null) {
 			permission = permissionProvider.getProvider();
 		}
@@ -40,7 +43,7 @@ public class VaultHook {
 	}
 
 	private static boolean setupChat() {
-		RegisteredServiceProvider<Chat> chatProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+		RegisteredServiceProvider<Chat> chatProvider = Bukkit.getServicesManager().getRegistration(Chat.class);
 		if (chatProvider != null) {
 			chat = chatProvider.getProvider();
 		}
@@ -49,12 +52,12 @@ public class VaultHook {
 	}
 
 	private static boolean setupEconomy() {
-		RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-		if (economyProvider != null) {
-			economy = economyProvider.getProvider();
-		}
+        RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
+        if (economyProvider != null) {
+            economy = economyProvider.getProvider();
+        }
 
-		return (economy != null);
-	}
+        return (economy != null);
+    }
 
 }
