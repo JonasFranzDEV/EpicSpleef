@@ -1,0 +1,25 @@
+particles:
+  enchantment:
+    enabled: true
+    price: 1500
+  crapping:
+    enabled: true
+    price: 1500
+  hearts:
+    enabled: true
+    price: 1500
+  raincloud:
+    enabled: true
+    price: 1500
+  cloudtail:
+    enabled: true
+    price: 1500
+  flames:
+    enabled: true
+    price: 1500
+  spell:
+    enabled: true
+    price: 1500
+  greenPath:
+    enabled: true
+    price: 1500

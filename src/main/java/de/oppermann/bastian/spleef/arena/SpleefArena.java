@@ -26,6 +26,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
 import de.oppermann.bastian.spleef.hooks.VaultHook;
+import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.GravityModifier;
@@ -37,7 +38,7 @@ import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
-import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 import de.oppermann.bastian.spleef.util.TitleManager;
 import de.oppermann.bastian.spleef.util.Validator;
 import de.oppermann.bastian.spleef.util.gui.GuiItem;
@@ -74,6 +75,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	private boolean countdownIsActive = false;
 	private int countdownId = -1;
 	private boolean playersAreInLobby = false;
+	
+	private final int[] COUNTDOWN_COUNTER = new int[] { 0 };
 	
 	
 	/**
@@ -182,16 +185,16 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 		final boolean IN_LOBBY = inLobby;
 		this.countdownIsActive = true;
-		final int[] COUNTER = new int[] { time };
+		COUNTDOWN_COUNTER[0] = time;
 		final int[] ID = new int[1];
 		ID[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(SpleefMain.getInstance(), new Runnable() {
 			public void run() {
 				for (UUID playerUUID : PLAYERS) {
 					Player player = Bukkit.getPlayer(playerUUID);
-					player.setLevel(COUNTER[0]);
+					player.setLevel(COUNTDOWN_COUNTER[0]);
 				}
 				
-				if (COUNTER[0] == 0) {
+				if (COUNTDOWN_COUNTER[0] == 0) {
 					countdownIsActive = false;					
 					if (IN_LOBBY) {
 						fillArena(Material.SNOW_BLOCK, (byte) 0); 
@@ -209,11 +212,11 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					return;
 				}
 				
-				if (COUNTER[0] <= 5 || (COUNTER[0] <= 30 && COUNTER[0] % 5 == 0) || (COUNTER[0] <= 100 && COUNTER[0] % 20 == 0) || COUNTER[0] % 100 == 0) {
-					broadcastMessage(Language.JOINED_ARENA_STATUS_GAME_STARTS_IN.toString().replace("%seconds%", String.valueOf(COUNTER[0])));
+				if (COUNTDOWN_COUNTER[0] <= 5 || (COUNTDOWN_COUNTER[0] <= 30 && COUNTDOWN_COUNTER[0] % 5 == 0) || (COUNTDOWN_COUNTER[0] <= 100 && COUNTDOWN_COUNTER[0] % 20 == 0) || COUNTDOWN_COUNTER[0] % 100 == 0) {
+					broadcastMessage(Language.JOINED_ARENA_STATUS_GAME_STARTS_IN.toString().replace("%seconds%", String.valueOf(COUNTDOWN_COUNTER[0])));
 					if (getConfiguration().showTitleCountdown()) {
 						broadcastTitle("", WrappedEnumTitleAction.TITLE);
-						broadcastTitle(Language.JOINED_ARENA_STATUS_GAME_STARTS_IN.toString().replace("%seconds%", String.valueOf(COUNTER[0])), WrappedEnumTitleAction.SUBTITLE);
+						broadcastTitle(Language.JOINED_ARENA_STATUS_GAME_STARTS_IN.toString().replace("%seconds%", String.valueOf(COUNTDOWN_COUNTER[0])), WrappedEnumTitleAction.SUBTITLE);
 					}
 					for (UUID playerUUID : PLAYERS) {
 						Player player = Bukkit.getPlayer(playerUUID);
@@ -221,8 +224,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					}
 				}
 				
-				updateSigns(COUNTER[0]);
-				COUNTER[0]--;
+				updateSigns(COUNTDOWN_COUNTER[0]);
+				COUNTDOWN_COUNTER[0]--;
 			}
 		}, 0L, 20L);
 		countdownId = ID[0];
@@ -242,8 +245,23 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 	}
 	
-	private void setScoreboard(Player player) {
+	/**
+	 * (Re-)sets the scoreboard.
+	 */
+	public void setScoreboard(Player player) {
 		SCOREBOARD_CONFIGURATION.setScores(player, this);
+	}
+	
+	/**
+	 * Sets the countdown.
+	 */
+	public void setCountdown(int countdown, boolean startIfPossible) {
+		COUNTDOWN_COUNTER[0] = countdown;
+		if (!countdownIsActive()) {
+			if (PLAYERS.size() >= 2 && getStatus() != GameStatus.ACTIVE) {
+				startCountdown(playersAreInLobby, countdown);
+			}
+		}
 	}
 	
 	/**
@@ -418,14 +436,14 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		if (getStatus() == GameStatus.ACTIVE) {
 			
 			// add loss to the playerstats
-			SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+			SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
 				@Override
 				public void onFailure(Throwable e) {
 					e.printStackTrace();
 				}
 
 				@Override
-				public void onSuccess(SpleefPlayerStats stats) {
+				public void onSuccess(SpleefPlayer stats) {
 					stats.addLosses(getName(), 1);
 					stats.addPoints(getName(), CONFIGURATION.getPointsParticipationReward());
 				}
@@ -459,14 +477,14 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				winner.sendMessage(Language.PLAYER_WHO_WON.toString().replace("%player%", winner.getName()));
 				
 				// add win to the playerstats
-				SpleefPlayerStats.getPlayerStats(winnerUUID, new FutureCallback<SpleefPlayerStats>() {
+				SpleefPlayer.getPlayer(winnerUUID, new FutureCallback<SpleefPlayer>() {
 					@Override
 					public void onFailure(Throwable e) {
 						e.printStackTrace();
 					}
 
 					@Override
-					public void onSuccess(SpleefPlayerStats stats) {
+					public void onSuccess(SpleefPlayer stats) {
 						stats.addWins(getName(), 1);
 						stats.addPoints(getName(), CONFIGURATION.getPointsWinningReward());
 						// TODO add points
@@ -721,6 +739,20 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 */
 	public boolean playersAreInLobby() {
 		return playersAreInLobby;
+	}
+	
+	/**
+	 * Deletes the arena.
+	 * 
+	 * @param deleteStats Wheter the stats should be deleted or not.
+	 */
+	public void delete(boolean deleteStats) {	
+		stopImmediately(GameStopReason.EDIT_ARENA);
+		StorageManager.getInstance().deleteConfig(this);
+		if (deleteStats) {
+			StorageManager.getInstance().deleteTable(getName());
+		}
+		ARENAS.remove(this);
 	}
 
 	/**

@@ -14,13 +14,13 @@ import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandResult;
 
-public class LeaveArgument extends AbstractArgument {
+public class StartArgument extends AbstractArgument {
 
 	/**
 	 * Class constructor.
 	 */
-	public LeaveArgument() {
-		super(new String[]{Language.COMMAND_LEAVE.toString()}, 1, "spleef.leave", null, Language.COMMAND_LEAVE_DESCRIPTION.toString());
+	public StartArgument() {
+		super(new String[]{Language.COMMAND_START.toString()}, 1, "spleef.start", null, Language.COMMAND_START_DESCRIPTION.toString());
 	}
 
 	/*
@@ -40,8 +40,13 @@ public class LeaveArgument extends AbstractArgument {
 			return CommandResult.SUCCESS;
 		}
 		
-		arena.removePlayer(player);
-		return CommandResult.SUCCESS;	// should never happen
+		if (arena.getPlayers().size() < 2) {
+			player.sendMessage(Language.MUST_BE_AT_LEAST_2_PLAYERS.toString());
+			return CommandResult.SUCCESS;
+		}
+		arena.setCountdown(5, true);
+		player.sendMessage(Language.COUNTDOWN_SET_TO.toString().replace("%seconds%", "5"));
+		return CommandResult.SUCCESS;
 	}
 
 	/*
@@ -61,7 +66,7 @@ public class LeaveArgument extends AbstractArgument {
 	public List<String> onTabComplete(Player sender, String[] args) {	
 		ArrayList<String> list = new ArrayList<>();
 		if (args.length == 1) {
-			list.add(Language.COMMAND_LEAVE.toString());
+			list.add(Language.COMMAND_START.toString());
 		}
 		return list;
 	}
@@ -72,7 +77,7 @@ public class LeaveArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_LEAVE, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_START, getDescription());
 	}
 
 }

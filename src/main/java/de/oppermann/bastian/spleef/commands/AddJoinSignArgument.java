@@ -2,7 +2,9 @@ package de.oppermann.bastian.spleef.commands;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
@@ -33,7 +35,6 @@ public class AddJoinSignArgument extends AbstractArgument {
 	 * (non-Javadoc)
 	 * @see de.oppermann.bastian.spleef.util.command.AbstractArgument#executeForPlayer(org.bukkit.entity.Player, org.bukkit.command.Command, java.lang.String[])
 	 */
-	@SuppressWarnings("deprecation")	// who cares?
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {
 		if (args.length > 2 || args.length < 1) {	// only 1 or 2 arguments are allowed
@@ -60,7 +61,8 @@ public class AddJoinSignArgument extends AbstractArgument {
 			
 			Block target = null;
 			try {
-				target = player.getTargetBlock(null, 20);
+				Set<Material> nullSet = null;
+				target = player.getTargetBlock(nullSet, 20);
 			} catch (IllegalStateException e) {
 				// :(
 			}

@@ -33,7 +33,7 @@ public class ScoreboardConfiguration {
 	public void setScores(Player player, SpleefArena arena) {
 		final SpleefArena ARENA = arena;
 		final Player PLAYER = player;
-		SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+		SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
 
 			@Override
 			public void onFailure(Throwable e) {
@@ -41,7 +41,7 @@ public class ScoreboardConfiguration {
 			}
 
 			@Override
-			public void onSuccess(SpleefPlayerStats stats) {
+			public void onSuccess(SpleefPlayer stats) {
 				if (PlayerManager.getArena(PLAYER.getUniqueId()) == null) {	// check if the player is still ingame
 					return;
 				}

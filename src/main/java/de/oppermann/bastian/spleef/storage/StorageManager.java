@@ -30,7 +30,13 @@ import de.oppermann.bastian.spleef.util.Validator;
 public class StorageManager {
 	
 	//private ExecutorService threadPool = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-	private ExecutorService threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,  60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+	private boolean ownParameters = SpleefMain.getInstance().getConfig().getBoolean("expertsOnly.stats.threadPoolSettings.ownParameters", false);
+	private int ownCorePoolSize = SpleefMain.getInstance().getConfig().getInt("expertsOnly.stats.threadPoolSettings.corePoolSize", 0);
+	private int ownMaximumPoolSize = SpleefMain.getInstance().getConfig().getInt("expertsOnly.stats.threadPoolSettings.maximumPoolSize", Integer.MAX_VALUE);
+	private long ownKeepAliveTime = SpleefMain.getInstance().getConfig().getLong("expertsOnly.stats.threadPoolSettings.keepAliveTimeInMilliSeconds", 60*1000);
+	private ExecutorService threadPool = ownParameters ? 
+			new ThreadPoolExecutor(ownCorePoolSize, ownMaximumPoolSize, ownKeepAliveTime, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>()) :
+			new ThreadPoolExecutor(0, Integer.MAX_VALUE,  60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 	private ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(threadPool);
 
 	private static StorageManager instance;	// singleton instance of the class
@@ -43,12 +49,20 @@ public class StorageManager {
 	
 	private StorageManager() {
 		instance = this;
+		lock.lock();	// database must be created first...
 		threadPool.submit(new Runnable() {			
 			@Override
 			public void run() {
 				try {
-					if (sqlLite) {
+					if (sqlLite) {						
 						connector = new SQLiteConnector(SpleefMain.getInstance(), "database.db");
+						SpleefMain.getInstance().log(Level.SEVERE, "Database created!");
+						Bukkit.getScheduler().runTask(SpleefMain.getInstance(), new Runnable() {							
+							@Override
+							public void run() {
+								lock.unlock();	// unlock cause database was created :)
+							}
+						});
 					} else {
 						// TODO add mySQL support
 					}			
@@ -61,12 +75,32 @@ public class StorageManager {
 				}
 				
 				try {
+					lock.lock();
 					connector.getStatement().execute(
-						"CREATE TABLE IF NOT EXISTS `stats` (" +
+						"CREATE TABLE IF NOT EXISTS `epicspleef_stats` (" +
 					    "`uuid` varchar(16) NOT NULL," +
 						"`points` int(11) NOT NULL," +
 						"PRIMARY KEY (uuid) )"
 					);
+					lock.unlock();
+					// TODO for future database changes: add missing columns
+				} catch (SQLException e) {
+					// would be very sad, if this happens :(
+					SpleefMain.getInstance().log(Level.SEVERE, "Falied to create table in database. Stopping plugin.");
+					e.printStackTrace();
+					Bukkit.getPluginManager().disablePlugin(SpleefMain.getInstance());
+					return;
+				}
+				
+				try {
+					lock.lock();
+					connector.getStatement().execute(
+						"CREATE TABLE IF NOT EXISTS `epicspleef_shop` (" +
+					    "`uuid` varchar(16) NOT NULL," +
+						"`particleId` int(11) NOT NULL," +
+						"PRIMARY KEY (uuid, particleId) )"
+					);
+					lock.unlock();
 					// TODO for future database changes: add missing columns
 				} catch (SQLException e) {
 					// would be very sad, if this happens :(
@@ -92,8 +126,9 @@ public class StorageManager {
 			@Override
 			public void run() {
 				try {
+					lock.lock();
 					connector.getStatement().execute(
-						"CREATE TABLE IF NOT EXISTS `stats " + arenaName + "` (" +
+						"CREATE TABLE IF NOT EXISTS `epicspleef_stats_" + arenaName + "` (" +
 						"`uuid` varchar(16) NOT NULL," +		// the uuid of the player
 						"`wins` int(11) NOT NULL," +			// the wins of the player in this arena
 						"`losses` int(11) NOT NULL," +			// the losses of the player in this arena
@@ -102,6 +137,7 @@ public class StorageManager {
 						"`destroyedblocks` int(11) NOT NULL," +	// the amount of destroyed blocks
 						"PRIMARY KEY (uuid) )"
 					);
+					lock.unlock();
 					// TODO for future database changes: add missing columns
 					// TODO option to enable loading the data to memory on startup.
 				} catch (SQLException e) {
@@ -172,6 +208,45 @@ public class StorageManager {
 		
 		return accessor;		
 	}
+
+	/**
+	 * Deletes the config file for the arena.
+	 * 
+	 * @param spleefArena The arena.
+	 */
+	public void deleteConfig(SpleefArena spleefArena) {
+		ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(spleefArena.getName());
+		accessor.getFile().delete();
+		SpleefMain.getInstance().removeArenaConfiguration(spleefArena.getName());
+	}
+	
+
+	/**
+	 * Deletes the table for the arena.
+	 * 
+	 * @param arenaName The name of the arena.
+	 */
+	public void deleteTable(final String arenaName) {
+		submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (needWriteLock()) {
+						lock.lock();
+					}
+					connector.getStatement().execute("DROP TABLE `epicspleef_stats_" + arenaName + "`;");
+					if (needWriteLock()) {
+						lock.unlock();
+					}
+				} catch (SQLException e) {
+					// would be very sad, if this happens :(
+					SpleefMain.getInstance().log(Level.SEVERE, "Falied to delete table \"" + arenaName + "\" in database.");
+					e.printStackTrace();
+					return;
+				}
+			}
+		});
+	}
 	
 	/**
 	 * Creates a new {@link ConfigAccessor} for the lobby if it doesn't already exits.
@@ -221,6 +296,20 @@ public class StorageManager {
 	 */
 	public boolean needWriteLock() {
 		return sqlLite;
+	}
+	
+	/**
+	 * Checks if the database type is SQLLite
+	 */
+	public boolean isSqlLite() {
+		return sqlLite;
+	}
+	
+	/**
+	 * Checks if the database type is MySQL
+	 */
+	public boolean isMySQL() {
+		return !sqlLite;
 	}
 	
 	/**

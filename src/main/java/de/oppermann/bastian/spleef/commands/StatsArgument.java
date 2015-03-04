@@ -57,7 +57,7 @@ public class StatsArgument extends AbstractArgument {
 	public List<String> onTabComplete(Player sender, String[] args) {	
 		ArrayList<String> list = new ArrayList<>();
 		if (args.length == 1) {
-			list.add("stats");
+			list.add(Language.COMMAND_STATS.toString());
 		}
 		return list;
 	}

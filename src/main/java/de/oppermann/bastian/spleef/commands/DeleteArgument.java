@@ -7,23 +7,22 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.oppermann.bastian.spleef.SpleefMain;
+import com.google.common.collect.Sets;
+
 import de.oppermann.bastian.spleef.arena.SpleefArena;
-import de.oppermann.bastian.spleef.arena.StandardSpleefArena;
-import de.oppermann.bastian.spleef.storage.StorageManager;
+import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.Language;
-import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandResult;
 
-public class CreateArgument extends AbstractArgument {
+public class DeleteArgument extends AbstractArgument {
 
 	/**
 	 * Class constructor.
 	 */
-	public CreateArgument() {
-		super(new String[]{Language.COMMAND_CREATE.toString()}, 2, "spleef.create", null, Language.COMMAND_CREATE_DESCRIPTION.toString());
+	public DeleteArgument() {
+		super(new String[]{Language.COMMAND_DELETE.toString()}, -1, "spleef.delete", null, Language.COMMAND_DELETE_DESCRIPTION.toString());
 	}
 
 	/*
@@ -32,7 +31,7 @@ public class CreateArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {
-		if (args.length == 2) {	
+		if (args.length == 2 || args.length == 3 || args.length == 4) {	
 			
 			if (!player.hasPermission(getPermission())) {
 				return CommandResult.NO_PERMISSION;
@@ -46,16 +45,27 @@ public class CreateArgument extends AbstractArgument {
 				}
 			}
 			
-			if (arena != null) {
-				player.sendMessage(Language.ALREADY_ARENA_WITH_NAME.toString().replace("%arena%", args[1]));
+			if (args.length <= 2 || !args[1].equals(args[2])) {
+				player.sendMessage(Language.ARENAS_MUST_BE_THE_SAME.toString().replace("%arena%", args[1]));
 				return CommandResult.SUCCESS;
 			}
 			
-			arena = new StandardSpleefArena(args[1], player.getWorld().getName(), new SpleefArenaConfiguration(), SpleefMain.getInstance().getDefaultScoreboardConfiguration());
-			arena.getConfiguration().setDisabled(true);
-			StorageManager.getInstance().createConfigForArena(arena);
-			StorageManager.getInstance().createTableForArena(arena.getName());
-			player.sendMessage(Language.SUCCESSFULLY_CREATED_ARENA.toString().replace("%arena%", args[1]));
+			if (arena == null) {
+				player.sendMessage(Language.NO_ARENA_WITH_NAME.toString().replace("%arena%", args[1]));
+				return CommandResult.SUCCESS;
+			}
+			
+			boolean deleteStats = false;
+			
+			if (args.length == 4) {
+				if (args[3].equalsIgnoreCase(Language.VALUE_TRUE.toString())) {
+					deleteStats = true;
+				}
+			}			
+			
+			arena.stopImmediately(GameStopReason.EDIT_ARENA);
+			arena.delete(deleteStats);
+			player.sendMessage(Language.SUCCESSFULLY_DELETED_ARENA.toString().replace("%arena%", args[1]));
 			return CommandResult.SUCCESS;
 		}
 		return CommandResult.ERROR;	// should never happen
@@ -78,7 +88,17 @@ public class CreateArgument extends AbstractArgument {
 	public List<String> onTabComplete(Player sender, String[] args) {	
 		ArrayList<String> list = new ArrayList<>();
 		if (args.length == 1) {
-			list.add(Language.COMMAND_CREATE.toString());
+			list.add(Language.COMMAND_DELETE.toString());
+		}
+		if (args.length == 2) {
+			list.addAll(Sets.newHashSet(SpleefArena.getArenaNames()));
+		}
+		if (args.length == 3) {
+			list.add(args[1]);
+		}
+		if (args.length == 4) {
+			list.add(Language.VALUE_TRUE.toString());
+			list.add(Language.VALUE_FALSE.toString());			
 		}
 		return list;
 	}
@@ -89,7 +109,7 @@ public class CreateArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_CREATE + " " + Language.ARGUMENT_ARENA, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_DELETE + " " + Language.ARGUMENT_ARENA + " " + Language.ARGUMENT_ARENA + " " + Language.ARGUMENT_DELETE_STATS_OPTIONAL, getDescription());
 	}
 
 }

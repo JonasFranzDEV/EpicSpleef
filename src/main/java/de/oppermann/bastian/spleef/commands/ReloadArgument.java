@@ -7,20 +7,21 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.oppermann.bastian.spleef.arena.SpleefArena;
+import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.util.Language;
-import de.oppermann.bastian.spleef.util.PlayerManager;
+import de.oppermann.bastian.spleef.util.Reloader;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandResult;
 
-public class LeaveArgument extends AbstractArgument {
+public class ReloadArgument extends AbstractArgument {
 
 	/**
 	 * Class constructor.
 	 */
-	public LeaveArgument() {
-		super(new String[]{Language.COMMAND_LEAVE.toString()}, 1, "spleef.leave", null, Language.COMMAND_LEAVE_DESCRIPTION.toString());
+	public ReloadArgument() {
+		super(new String[]{Language.COMMAND_RELOAD.toString()}, 1, "spleef.reload", null, Language.COMMAND_RELOAD_DESCRIPTION.toString());
+		Reloader.class.getName();	// load class
 	}
 
 	/*
@@ -34,14 +35,9 @@ public class LeaveArgument extends AbstractArgument {
 			return CommandResult.NO_PERMISSION;
 		}
 		
-		SpleefArena arena = PlayerManager.getArena(player.getUniqueId());
-		if (arena == null) {
-			player.sendMessage(Language.MUST_BE_IN_ARENA.toString());
-			return CommandResult.SUCCESS;
-		}
-		
-		arena.removePlayer(player);
-		return CommandResult.SUCCESS;	// should never happen
+		player.sendMessage(Language.RELOADING.toString());
+		new Reloader(SpleefMain.getInstance().getFile(), Language.PLUGIN_RELOADED.toString(), player).reload();
+		return CommandResult.SUCCESS;
 	}
 
 	/*
@@ -61,7 +57,7 @@ public class LeaveArgument extends AbstractArgument {
 	public List<String> onTabComplete(Player sender, String[] args) {	
 		ArrayList<String> list = new ArrayList<>();
 		if (args.length == 1) {
-			list.add(Language.COMMAND_LEAVE.toString());
+			list.add(Language.COMMAND_RELOAD.toString());
 		}
 		return list;
 	}
@@ -72,7 +68,7 @@ public class LeaveArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_LEAVE, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_RELOAD, getDescription());
 	}
 
 }

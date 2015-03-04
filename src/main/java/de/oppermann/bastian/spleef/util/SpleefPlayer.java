@@ -23,20 +23,20 @@ import de.oppermann.bastian.spleef.storage.StorageManager;
  * 
  * @author Bastian Oppermann
  */
-public class SpleefPlayerStats {
+public class SpleefPlayer {
 	
 	static {	// write the changes every 2 minutes into database
 		Bukkit.getScheduler().runTaskTimer(SpleefMain.getInstance(), new Runnable() {			
 			@Override
 			public void run() {
-				for (SpleefPlayerStats stats : STATS.values()) {
+				for (SpleefPlayer stats : STATS.values()) {
 					stats.writeChangesToDatabase();
 				}
 			}
 		}, 20*60*2, 20*60*2);	// TODO configurable interval
 	}
 	
-	private static final HashMap<UUID, SpleefPlayerStats> STATS = new HashMap<>();
+	private static final HashMap<UUID, SpleefPlayer> STATS = new HashMap<>();
 	
 	private final UUID PLAYER;
 	
@@ -50,9 +50,12 @@ public class SpleefPlayerStats {
 	private final HashMap<String, Integer> DESTROYED_BLOCKS = new HashMap<>();
 	private final ArrayList<String> NOT_IN_SYNC_WITH_DATABASE = new ArrayList<String>(); // every arena name in the list is different from the database
 	private boolean notInSyncWithMainTable = false;
+	private boolean notInSyncWithShopTable = false;
 	private int totalPoints;
 	
-	private SpleefPlayerStats(UUID player, boolean existsInMainTable, int totalPoints) {
+	private ArrayList<Integer> boughtEffects = new ArrayList<Integer>();
+	
+	private SpleefPlayer(UUID player, boolean existsInMainTable, int totalPoints) {
 		Validator.validateNotNull(player, "player");
 		this.PLAYER = player;
 		
@@ -272,10 +275,35 @@ public class SpleefPlayerStats {
 	}
 	
 	/**
+	 * Sets the total points of the player.
+	 */
+	public void setTotalPoints(int totalPoints) {
+		this.totalPoints = totalPoints;
+		notInSyncWithMainTable = true;
+	}
+	
+	/**
+	 * Checks if the player has bought an effect.
+	 */
+	public boolean hasBought(Particle particleEffect) {
+		return boughtEffects.contains(particleEffect.getId());
+	}
+	
+	/**
+	 * Sets an effect as bought.
+	 */
+	public void addEffect(Particle particleEffect) {
+		if (!hasBought(particleEffect)) {
+			boughtEffects.add(particleEffect.getId());
+			notInSyncWithShopTable = true;			
+		}
+	}
+	
+	/**
 	 * Writes the changes to the database. This has no effect if there aren't any changes.
 	 */
 	public void writeChangesToDatabase() {
-		if (!notInSyncWithMainTable && NOT_IN_SYNC_WITH_DATABASE.isEmpty())
+		if (!notInSyncWithMainTable && NOT_IN_SYNC_WITH_DATABASE.isEmpty() && !notInSyncWithShopTable)
 		{
 			return;	// nothing to write in the database
 		}
@@ -295,12 +323,12 @@ public class SpleefPlayerStats {
 		NOT_IN_SYNC_WITH_DATABASE.clear();
 		
 		final boolean NOT_IN_SYNC_WITH_MAIN_TABLE_CLONE = notInSyncWithMainTable;
+		final boolean NOT_IN_SYNC_WITH_SHOP_TABLE_CLONE = notInSyncWithShopTable;
 		final int TOTAL_POINTS_CLONE = totalPoints;
 		final boolean EXISTS_IN_MAIN_TABLE_CLONE = existsInMainTable;
+		final ArrayList<Integer> BOUGHT_EFFECTS_CLONE = new ArrayList<Integer>(boughtEffects);
+		existsInMainTable = notInSyncWithMainTable ? true : existsInMainTable;
 		notInSyncWithMainTable = false;
-		existsInMainTable = true;
-		
-		
 		
 		StorageManager.getInstance().submit(new Runnable() {			
 			@Override
@@ -314,7 +342,7 @@ public class SpleefPlayerStats {
 					final int INDEX_DESTROYED_BLOCKS;
 					final int INDEX_PLAYERUUID;
 					if (!EXISTS_IN_TABLE_CLONE.contains(arena)) {
-						QUERY = "INSERT INTO `stats " + arena + "` (`uuid`, `wins`, `losses`, `points`, `jumps`, `destroyedblocks`) VALUES (?, ?, ?, ?, ?, ?);";
+						QUERY = "INSERT INTO `epicspleef_stats_" + arena + "` (`uuid`, `wins`, `losses`, `points`, `jumps`, `destroyedblocks`) VALUES (?, ?, ?, ?, ?, ?);";
 						INDEX_WINS = 2;
 						INDEX_LOSSES = 3;
 						INDEX_POINTS = 4;
@@ -322,7 +350,7 @@ public class SpleefPlayerStats {
 						INDEX_DESTROYED_BLOCKS = 6;
 						INDEX_PLAYERUUID = 1;
 					} else {
-						QUERY = "UPDATE `stats " + arena + "` SET `wins` = ? ,`losses` = ? ,`points` = ?,`jumps` = ?,`destroyedblocks` = ? WHERE `uuid` = ?";
+						QUERY = "UPDATE `epicspleef_stats_" + arena + "` SET `wins` = ? ,`losses` = ? ,`points` = ?,`jumps` = ?,`destroyedblocks` = ? WHERE `uuid` = ?";
 						INDEX_WINS = 1;
 						INDEX_LOSSES = 2;
 						INDEX_POINTS = 3;
@@ -388,11 +416,11 @@ public class SpleefPlayerStats {
 					final int INDEX_POINTS;
 					final int INDEX_PLAYERUUID;		
 					if (!EXISTS_IN_MAIN_TABLE_CLONE) {
-						QUERY = "INSERT INTO `stats` (`uuid`, `points`) VALUES (?, ?);";
+						QUERY = "INSERT INTO `epicspleef_stats` (`uuid`, `points`) VALUES (?, ?);";
 						INDEX_POINTS = 2;
 						INDEX_PLAYERUUID = 1;
 					} else {
-						QUERY = "UPDATE `stats` SET `points` = ? WHERE `uuid` = ?";
+						QUERY = "UPDATE `epicspleef_stats` SET `points` = ? WHERE `uuid` = ?";
 						INDEX_POINTS = 1;
 						INDEX_PLAYERUUID = 2;
 					}	
@@ -433,6 +461,39 @@ public class SpleefPlayerStats {
 						return;
 					}
 				}
+				
+				if (NOT_IN_SYNC_WITH_SHOP_TABLE_CLONE) {
+					for (int particleId : BOUGHT_EFFECTS_CLONE) {
+						final String QUERY = 
+								StorageManager.getInstance().isMySQL() ?
+								"INSERT INTO `epicspleef_shop` (`uuid`, `particleId`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `uuid` = `uuid`;" :
+								"INSERT OR REPLACE INTO `epicspleef_shop` (`uuid`, `particleId`) VALUES (?, ?);";
+						final int INDEX_ITEM_ID = 2;
+						final int INDEX_PLAYERUUID = 1;					
+						
+						try {
+							PreparedStatement stmt = StorageManager.getInstance().getSqlConnector().prepareStatement(QUERY);
+							stmt.setInt(INDEX_ITEM_ID, particleId);
+							stmt.setString(INDEX_PLAYERUUID, PLAYER.toString());
+							// execute update							
+							if (StorageManager.getInstance().needWriteLock()) {
+								StorageManager.getInstance().getLock().lock();
+							}	
+							try {
+								stmt.execute();
+							} finally {
+								if (StorageManager.getInstance().needWriteLock()) {
+									StorageManager.getInstance().getLock().unlock();
+								}
+							}
+						} catch (SQLException e) {
+							// should not happen ...
+							SpleefMain.getInstance().log(Level.SEVERE, "Failed to write playerstats into database!");
+							e.printStackTrace();
+							return;
+						}
+					}
+				}
 			}
 		});
 	}
@@ -444,16 +505,16 @@ public class SpleefPlayerStats {
 	 * @param callback The callback.
 	 * @return The statistics for the player with the given uuid.
 	 */
-	public static void getPlayerStats(final UUID player, final FutureCallback<SpleefPlayerStats> callback) {
+	public static void getPlayer(final UUID player, final FutureCallback<SpleefPlayer> callback) {
 		Validator.validateNotNull(callback, "callback");
 		Validator.validateNotNull(player, "player");
 		if (!STATS.containsKey(player)) {
-			ListenableFuture<SpleefPlayerStats> future = StorageManager.getInstance().getListeningExecutorService().submit(new Callable<SpleefPlayerStats>() {
+			ListenableFuture<SpleefPlayer> future = StorageManager.getInstance().getListeningExecutorService().submit(new Callable<SpleefPlayer>() {
 				@Override
-				public SpleefPlayerStats call() throws Exception {
+				public SpleefPlayer call() throws Exception {
 					boolean existsInMainTable = false;
 					int totalPoints = 0;
-					final String QUERY_TOTAL_POINTS = "SELECT `points` FROM `stats` WHERE `uuid` = ?";
+					final String QUERY_TOTAL_POINTS = "SELECT `points` FROM `epicspleef_stats` WHERE `uuid` = ?";
 					int indexPlayerUUID = 1;
 					try {	// load stats from database
 						PreparedStatement stmt = StorageManager.getInstance().getSqlConnector().prepareStatement(QUERY_TOTAL_POINTS);
@@ -471,7 +532,7 @@ public class SpleefPlayerStats {
 						throw e;
 					}
 					
-					final SpleefPlayerStats stats = new SpleefPlayerStats(player, existsInMainTable, totalPoints);
+					final SpleefPlayer stats = new SpleefPlayer(player, existsInMainTable, totalPoints);
 					
 					for (String arena : SpleefArena.getArenaNames()) {
 						boolean existsInTable = false;
@@ -481,7 +542,7 @@ public class SpleefPlayerStats {
 						int jumps = 0;
 						int destroyedBlocks = 0;
 						
-						final String QUERY_LOAD_STATS = "SELECT * FROM `stats " + arena + "` WHERE `uuid` = ?";
+						final String QUERY_LOAD_STATS = "SELECT * FROM `epicspleef_stats_" + arena + "` WHERE `uuid` = ?";
 						indexPlayerUUID = 1;
 						try {	// load stats from database
 							PreparedStatement stmt = StorageManager.getInstance().getSqlConnector().prepareStatement(QUERY_LOAD_STATS);
@@ -511,6 +572,24 @@ public class SpleefPlayerStats {
 							SpleefMain.getInstance().log(Level.SEVERE, "Failed to load playerstats from database!");
 							throw e;
 						}
+					}
+					
+					final String QUERY_BOUGHT_EFFECTS = "SELECT `particleId` FROM `epicspleef_shop` WHERE `uuid` = ?";
+					indexPlayerUUID = 1;
+					try {	// load from database
+						PreparedStatement stmt = StorageManager.getInstance().getSqlConnector().prepareStatement(QUERY_BOUGHT_EFFECTS);
+						stmt.setString(indexPlayerUUID, player.toString());	// sets the uuid
+						
+						stmt.execute();
+						ResultSet result = stmt.getResultSet();
+						while (result.next()) {
+							int particleId = result.getInt("particleId");
+							stats.boughtEffects.add(particleId);
+						}
+					} catch (SQLException e) {
+						// should not happen ...
+						SpleefMain.getInstance().log(Level.SEVERE, "Failed to load playerstats from database!");
+						throw e;
 					}
 					return stats;					
 				}				

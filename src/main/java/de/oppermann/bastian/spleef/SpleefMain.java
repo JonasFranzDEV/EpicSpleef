@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,10 +24,13 @@ import de.oppermann.bastian.spleef.commands.AddBlocksArgument;
 import de.oppermann.bastian.spleef.commands.AddJoinSignArgument;
 import de.oppermann.bastian.spleef.commands.AddSpawnlocArgument;
 import de.oppermann.bastian.spleef.commands.CreateArgument;
+import de.oppermann.bastian.spleef.commands.DeleteArgument;
 import de.oppermann.bastian.spleef.commands.JoinArgument;
 import de.oppermann.bastian.spleef.commands.LeaveArgument;
+import de.oppermann.bastian.spleef.commands.ReloadArgument;
 import de.oppermann.bastian.spleef.commands.SetLobbyArgument;
 import de.oppermann.bastian.spleef.commands.SetValueArgument;
+import de.oppermann.bastian.spleef.commands.StartArgument;
 import de.oppermann.bastian.spleef.commands.StatsArgument;
 import de.oppermann.bastian.spleef.commands.UpdateArgument;
 import de.oppermann.bastian.spleef.listener.BlockBreakListener;
@@ -47,7 +51,9 @@ import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.EpicSpleefVersion;
 import de.oppermann.bastian.spleef.util.GameStopReason;
+import de.oppermann.bastian.spleef.util.GravityModifier;
 import de.oppermann.bastian.spleef.util.Metrics;
+import de.oppermann.bastian.spleef.util.ParticleCreatorTask;
 import de.oppermann.bastian.spleef.util.PlayerDismountCheckTask;
 import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
@@ -77,6 +83,7 @@ public class SpleefMain extends JavaPlugin {
 	private ScoreboardConfiguration defaultScoreboardConfiguration;
 	
 	private ConfigAccessor languageConfigAccessor;
+	private ConfigAccessor particleConfigAccessor;
 
 	/*
 	 * (non-Javadoc)
@@ -89,7 +96,7 @@ public class SpleefMain extends JavaPlugin {
 
 		instance = this; // initialize instance field
 
-		log(Level.INFO, "Enabling spleef plugin by BtoBastian");
+		log(Level.INFO, "Enabling EpicSpleef by BtoBastian");
 
 		metrics(); // metrics stuff
 
@@ -99,6 +106,7 @@ public class SpleefMain extends JavaPlugin {
 		runTasks();	// run tasks
 		loadConfig(); // load the config
 		loadLanguageConfig(); // load the language config
+		loadParticleConfig(); // load the particle config
 		regListener(); // register listener
 		regCommands(); // register commands
 		loadLobbies(); // load the lobbies
@@ -140,6 +148,7 @@ public class SpleefMain extends JavaPlugin {
 	
 	private void loadClassesRequiredForDisable() {
 		GameStopReason.class.getClassLoader();
+		GravityModifier.class.getClassLoader();
 	}
 	
 	private void update(final boolean check, final boolean update, final boolean unsafeUpdates) {
@@ -165,6 +174,7 @@ public class SpleefMain extends JavaPlugin {
 	
 	private void runTasks() {
 		Bukkit.getScheduler().runTaskTimer(this, new PlayerDismountCheckTask(), 1, 1);
+		Bukkit.getScheduler().runTaskTimer(this, new ParticleCreatorTask(), 1, 1);
 	}
 	
 	private void metrics() {
@@ -172,14 +182,13 @@ public class SpleefMain extends JavaPlugin {
 	        Metrics metrics = new Metrics(this);
 	        metrics.start();
 	    } catch (IOException e) {
-	    	log(Level.INFO, "Failed to submit stats to metrics :((");
+	    	log(Level.INFO, "Failed to submit stats to metrics :((((((");
 	    }
 	}
 	
 	private void loadConfig() {
-		config = new ConfigAccessor(this, "config.yml", getDataFolder());
+		config = config != null ? config : new ConfigAccessor(this, "config.yml", getDataFolder());
 		config.saveDefaultConfig();
-		// TODO load stuff
 		
 		defaultScoreboardConfiguration = new ScoreboardConfiguration();
 		for (String line : config.getConfig().getStringList("scoreboard")) {
@@ -188,8 +197,12 @@ public class SpleefMain extends JavaPlugin {
 	}
 	
 	private void loadLanguageConfig() {
-		languageConfigAccessor = new ConfigAccessor(this, "language.yml", getDataFolder());
-		// TODO load stuff
+		languageConfigAccessor = new ConfigAccessor(this, config.getConfig().getString("mainSettings.languagefile", "language.yml"), getDataFolder());
+	}
+	
+	private void loadParticleConfig() {
+		particleConfigAccessor = new ConfigAccessor(this, "particles.yml", getDataFolder());
+		particleConfigAccessor.saveDefaultConfig();
 	}
 	
 	private void regListener() {
@@ -213,10 +226,13 @@ public class SpleefMain extends JavaPlugin {
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddJoinSignArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddSpawnlocArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new CreateArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new DeleteArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new JoinArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new LeaveArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new ReloadArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetLobbyArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new SetValueArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new StartArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new StatsArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new UpdateArgument());
 		// lobby
@@ -428,10 +444,35 @@ public class SpleefMain extends JavaPlugin {
 	}
 	
 	/**
+	 * Removes an accessor.
+	 */
+	public void removeArenaConfiguration(String arena) {
+		// validate parameters
+		Validator.validateNotNull(arena, "arena");
+		ARENAS.remove(arena);
+	}
+	
+	/**
+	 * Removes an accessor.
+	 */
+	public void removeLobbyConfiguration(String lobby) {
+		// validate parameters
+		Validator.validateNotNull(lobby, "lobby");
+		LOBBIES.remove(lobby);
+	}
+	
+	/**
 	 * Gets the {@link ConfigAccessor} for the language file.
 	 */
 	public ConfigAccessor getLanguageConfigAccessor() {
 		return languageConfigAccessor;
+	}	
+	
+	/**
+	 * Gets the {@link ConfigAccessor} for the particles.
+	 */
+	public ConfigAccessor getParticleConfigAccessor() {
+		return particleConfigAccessor;
 	}
 	
 	/**
@@ -441,6 +482,22 @@ public class SpleefMain extends JavaPlugin {
 		return defaultScoreboardConfiguration;
 	}
 	
+	/**
+	 * Gets the main {@link ConfigAccessor}.
+	 */
+	public ConfigAccessor getConfigAccessor() {
+		return config;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.bukkit.plugin.java.JavaPlugin#getConfig()
+	 */
+	@Override
+	public FileConfiguration getConfig() {
+		config = config != null ? config : new ConfigAccessor(this, "config.yml", getDataFolder());
+		return config.getConfig();
+	}
+
 	/**
 	 * Logs a text.
 	 */

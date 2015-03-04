@@ -26,6 +26,13 @@ public abstract class SQLConnector {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Gets the connection.
+	 */
+	public Connection getConnection() {
+		return connection;
+	}
 
 	/**
 	 * Gets a {@link Statement}.

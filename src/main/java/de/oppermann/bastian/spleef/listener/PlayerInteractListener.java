@@ -21,7 +21,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersExc
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerManager;
-import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 import de.oppermann.bastian.spleef.util.gui.GuiInventory;
 import de.oppermann.bastian.spleef.util.gui.GuiItem;
 
@@ -37,14 +37,14 @@ public class PlayerInteractListener implements Listener {
 				if (arena.getConfiguration().isEnableSnowballs()) {
 					player.getInventory().addItem(new ItemStack(Material.SNOW_BALL));
 					final SpleefArena ARENA = arena;
-					SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+					SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
 						@Override
 						public void onFailure(Throwable e) {
 							e.printStackTrace();
 						}
 
 						@Override
-						public void onSuccess(SpleefPlayerStats stats) {
+						public void onSuccess(SpleefPlayer stats) {
 							stats.addDestroyedBlocks(ARENA.getName(), 1);
 						}
 					});

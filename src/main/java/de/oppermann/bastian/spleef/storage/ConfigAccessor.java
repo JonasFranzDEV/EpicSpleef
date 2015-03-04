@@ -107,5 +107,12 @@ public class ConfigAccessor {
 			this.PLUGIN.saveResource(FILE_NAME, false);
 		}
 	}
+	
+	/**
+	 * Gets the File.
+	 */
+	public File getFile() {
+		return configFile;
+	}
 
 }

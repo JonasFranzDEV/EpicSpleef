@@ -3,6 +3,7 @@ package de.oppermann.bastian.spleef.util.gui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,10 +15,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.util.concurrent.FutureCallback;
 
+import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.Language;
+import de.oppermann.bastian.spleef.util.Particle;
 import de.oppermann.bastian.spleef.util.PlayerManager;
-import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 import de.oppermann.bastian.spleef.util.Validator;
 
 public enum GuiInventory {
@@ -89,22 +92,27 @@ public enum GuiInventory {
 		LAST_CREATED_TYPE.put(player.getUniqueId(), this);
 		
 		if (this == SHOP) {
-			Inventory inventory = Bukkit.createInventory(null, 9 * 5, Language.SHOP_ITEM.toString());
+			final Inventory INVENTORY = Bukkit.createInventory(null, 9 * 5, Language.SHOP_ITEM.toString());
+			SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
+				@Override
+				public void onFailure(Throwable arg0) {
+					SpleefMain.getInstance().log(Level.SEVERE, "Couldn't access to player database... :/");
+				}
+				
+				@Override
+				public void onSuccess(SpleefPlayer spleefPlayer) {
+					int[] locations = new int[] { 10, 12, 14, 16, 28, 30, 32, 34 , 20, 22, 24 };
+					int counter = 0;
+					for (Particle particle : Particle.values()) {
+						if (particle.isEnabled()) {
+							INVENTORY.setItem(locations[counter++], particle.getItem(spleefPlayer.hasBought(particle)));
+						}
+					}
+				}				
+			});			
 			
-			inventory.setItem(10, createItemStack(
-					Material.BOOK, 
-					ChatColor.WHITE + "Enchantment particles",	// TODO customizable text
-					ChatColor.RED + "Costs: " + ChatColor.GOLD + "100 points",	// TODO own price and customizable text
-					ChatColor.BLUE + "Looks very cool!"));	// TODO customizable text
-			
-			inventory.setItem(12, createItemStack(
-					Material.SOUL_SAND,
-					ChatColor.WHITE + "Crapping",	// TODO customizable text
-					ChatColor.RED + "Costs: " + ChatColor.GOLD + "500 points",	// TODO own price and customizable text
-					ChatColor.BLUE + "That's ugly :/"));	// TODO customizable text
-			
-			LAST_CREATED.put(player.getUniqueId(), inventory);
-			return inventory;
+			LAST_CREATED.put(player.getUniqueId(), INVENTORY);
+			return INVENTORY;
 		}
 		
 		if (this == JOIN) {
@@ -135,10 +143,10 @@ public enum GuiInventory {
 			final Inventory INVENTORY = Bukkit.createInventory(null, 9 * 5, Language.STATS_ITEM.toString());
 			final UUID PLAYER = player.getUniqueId();
 			
-			SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+			SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
 					
 				@Override
-				public void onSuccess(SpleefPlayerStats stats) {
+				public void onSuccess(SpleefPlayer stats) {
 					
 					ItemStack globalStatsItemStack = GuiItem.STATSINV_GLOBAL.getItem();
 					ItemMeta globalStatsMeta = globalStatsItemStack.getItemMeta();
@@ -189,23 +197,6 @@ public enum GuiInventory {
 		
 		LAST_CREATED.put(player.getUniqueId(), INVENTORY);
 		return INVENTORY;
-	}
-	
-	private ItemStack createItemStack(Material type, String displayName, String... lore) {
-		ItemStack itemStack = new ItemStack(type, 1);
-		ItemMeta meta = itemStack.getItemMeta();
-		
-		meta.setDisplayName(displayName);
-		itemStack.setItemMeta(meta);
-		
-		ArrayList<String> loreList = new ArrayList<>();
-		for (String str : lore) {
-			loreList.add(str);
-		}				
-		meta.setLore(loreList);
-		
-		itemStack.setItemMeta(meta);
-		return itemStack;
 	}
  
 }

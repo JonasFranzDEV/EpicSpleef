@@ -18,6 +18,9 @@ public enum Language {
 	COMMAND_CREATE("create"),
 	COMMAND_CREATE_DESCRIPTION("Creates a new arena"),
 	
+	COMMAND_DELETE("delete"),
+	COMMAND_DELETE_DESCRIPTION("Deletes an arena. You must repeat the arena argument!"),
+	
 	COMMAND_CREATELOBBY("createLobby"),
 	COMMAND_CREATELOBBY_DESCRIPTION("Creates a new lobby"),
 	
@@ -39,6 +42,12 @@ public enum Language {
 	
 	COMMAND_ADD_JOIN_SIGN("addJoinSign"),
 	COMMAND_ADD_JOIN_SIGN_DESCRIPTION("Sets the block you are looking at as a join sign"),
+	
+	COMMAND_START("start"),
+	COMMAND_START_DESCRIPTION("Shortens the countdown to 5 seconds"),
+	
+	COMMAND_RELOAD("reload"),
+	COMMAND_RELOAD_DESCRIPTION("Reloads the plugin"),
 	
 	COMMAND_UPDATE("update"),
 	COMMAND_UPDATE_DESCRIPTION("Lists all avaiable versions/updates, Downloads the latest version or installs it."),
@@ -79,6 +88,8 @@ public enum Language {
 			+ "%n" + ChatColor.GREEN + ChatColor.UNDERLINE +  "Things you should do now:"
 			+ "%n" + ChatColor.GREEN + "1. " + ChatColor.GOLD + "/spleef addspawnloc -lobby" + ChatColor.GREEN + " to add spawnlocations."
 	),
+	
+	SUCCESSFULLY_DELETED_ARENA(ChatColor.GREEN + "Arena " + ChatColor.GOLD + "%arena% " + ChatColor.GREEN + " deleted."),
 
 	WORLDEDIT_NOT_LOADED(ChatColor.RED + "Worldedit is missing."),
 	WORLDEDIT_NO_SELECTION(ChatColor.RED + "No worldedit area is selected."),
@@ -121,6 +132,14 @@ public enum Language {
 	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin!"),
 	
 	UNKNOWN_ENTITY(ChatColor.RED + "There's no (valid) entity with this name!"),
+	
+	ARENAS_MUST_BE_THE_SAME(ChatColor.RED + "You must repeate the arena argument!"),	
+
+	COUNTDOWN_SET_TO(ChatColor.GREEN + "Countdown set to %seconds%!"),
+	MUST_BE_AT_LEAST_2_PLAYERS(ChatColor.RED + "There must be at least 2 players!"),
+	
+	RELOADING(ChatColor.GREEN + "Reloading EpicSpleef..."),
+	PLUGIN_RELOADED(ChatColor.GREEN + "Reload complete"),	
 	
 	// stuff
 	PLAYER_ELIMINATED("%prefix%" + ChatColor.BLUE + "%player%" + ChatColor.GRAY + " has been eliminated!"),
@@ -180,6 +199,30 @@ public enum Language {
 	ARGUMENT_FLAG_OPTIONAL("[flag]"),
 	ARGUMENT_VALUE("<value>"),
 	ARGUMENT_VALUE_OPTIONAL("[value]"),
+	ARGUMENT_DELETE_STATS_OPTIONAL("[deleteStats]"),
+	
+	// particle
+	PARTICLE_ENCHANTMENT("Enchantment particles"),
+	PARTICLE_ENCHANTMENT_DESCRIPTION("Looks very cool!"),
+	PARTICLE_CRAPPING("Crapping"),
+	PARTICLE_CRAPPING_DESCRIPTION("Ok, that's ugly :/"),
+	PARTICLE_HEART("Hearts"),
+	PARTICLE_HEART_DESCRIPTION("Show how much you love everyone :)"),
+	PARTICLE_RAINCLOUD("Raincloud"),
+	PARTICLE_RAINCLOUD_DESCRIPTION("How is the weather today?"),
+	PARTICLE_CLOUD_TAIL("Cloudtail"),
+	PARTICLE_CLOUD_TAIL_DESCRIPTION("White clouds will follow you!"),
+	PARTICLE_FLAMES("Flames"),
+	PARTICLE_FLAMES_DESCRIPTION("FIRE!!!"),
+	PARTICLE_SPELL("Wizardspell"),
+	PARTICLE_SPELL_DESCRIPTION("Witch particles are really cool :)"),
+	PARTICLE_GREEN_PATH("Green path"),
+	PARTICLE_GREEN_PATH_DESCRIPTION("A green path will show your way."),
+	
+	PARTICLEPRICE(ChatColor.RED + "Costs: " + ChatColor.GOLD + "%price% points"),
+	PARTICLEPRICE_HEART(ChatColor.RED + "Costs: " + ChatColor.GOLD + "%price% hugs"),
+	
+	NOT_ENOUGH_POINTS_TO_BUY_PARTICLE(ChatColor.RED + "You don't have enough points!"),	
 	
 	HELP_HEADLINE(ChatColor.BLUE + " Help for " + ChatColor.RED + "/%cmd% "),
 	WRONG_USAGE(ChatColor.RED + "Wrong usage! Please type " + ChatColor.GOLD + "/%cmd% ?"),

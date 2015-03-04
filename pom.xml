@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.oppermann.bastian</groupId>
   <artifactId>EpicSpleef</artifactId>
-  <version>0.0.10-SNAPSHOT</version>
+  <version>0.0.11-SNAPSHOT</version>
   <name>EpicSpleef</name>
   <repositories>
     <repository>
@@ -44,7 +44,7 @@
     <dependency>
       <groupId>net.milkbowl.vault</groupId>
       <artifactId>Vault</artifactId>
-      <version>LATEST</version>
+      <version>1.5.1</version> <!-- LATEST VERSION (1.5.2) is broken...  -->
     </dependency>
     <!-- Javassist -->
     <dependency>

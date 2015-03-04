@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.PlayerManager;
-import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 
 public class PlayerMoveListener implements Listener {
 	
@@ -62,9 +62,9 @@ public class PlayerMoveListener implements Listener {
 			if (fromY < toY) {	// up
 				if (event.getFrom().getBlock().getRelative(0, -1, 0).getType().isBlock()) {
 					final SpleefArena ARENA = arena;
-					SpleefPlayerStats.getPlayerStats(player.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {					
+					SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {					
 						@Override
-						public void onSuccess(SpleefPlayerStats stats) {
+						public void onSuccess(SpleefPlayer stats) {
 							stats.addJumps(ARENA.getName(), 1);
 						}
 						

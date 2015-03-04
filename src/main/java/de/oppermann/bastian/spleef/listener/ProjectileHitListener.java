@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.PlayerManager;
-import de.oppermann.bastian.spleef.util.SpleefPlayerStats;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 
 public class ProjectileHitListener implements Listener {
 	
@@ -57,14 +57,14 @@ public class ProjectileHitListener implements Listener {
 		
 		
 		final SpleefArena ARENA = arena;
-		SpleefPlayerStats.getPlayerStats(shooter.getUniqueId(), new FutureCallback<SpleefPlayerStats>() {
+		SpleefPlayer.getPlayer(shooter.getUniqueId(), new FutureCallback<SpleefPlayer>() {
 			@Override
 			public void onFailure(Throwable e) {
 				e.printStackTrace();
 			}
 	
 			@Override
-			public void onSuccess(SpleefPlayerStats stats) {
+			public void onSuccess(SpleefPlayer stats) {
 				stats.addDestroyedBlocks(ARENA.getName(), 1);
 			}
 		});

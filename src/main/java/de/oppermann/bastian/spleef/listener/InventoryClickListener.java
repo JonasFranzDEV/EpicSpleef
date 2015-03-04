@@ -1,18 +1,27 @@
 package de.oppermann.bastian.spleef.listener;
 
+import java.util.logging.Level;
+
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
+import com.google.common.util.concurrent.FutureCallback;
+
+import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
 import de.oppermann.bastian.spleef.util.Language;
+import de.oppermann.bastian.spleef.util.Particle;
+import de.oppermann.bastian.spleef.util.ParticleCreatorTask;
 import de.oppermann.bastian.spleef.util.PlayerManager;
+import de.oppermann.bastian.spleef.util.SpleefPlayer;
 import de.oppermann.bastian.spleef.util.gui.GuiInventory;
 
 /**
@@ -52,6 +61,52 @@ public class InventoryClickListener implements Listener {
 		if (GuiInventory.getLastCreatedInventoryType(event.getWhoClicked().getUniqueId()) == GuiInventory.STATISTICS) {
 			if (compare(event.getWhoClicked().getOpenInventory().getTopInventory(), GuiInventory.getLastCreatedInventory(event.getWhoClicked().getUniqueId()))) {
 				event.setCancelled(true);
+			}
+		}
+		if (GuiInventory.getLastCreatedInventoryType(event.getWhoClicked().getUniqueId()) == GuiInventory.SHOP) {
+			if (compare(event.getWhoClicked().getOpenInventory().getTopInventory(), GuiInventory.getLastCreatedInventory(event.getWhoClicked().getUniqueId()))) {
+				event.setCancelled(true);
+				if (event.getCurrentItem() != null) {
+					final Particle PARTICLE = Particle.getParticle(event.getCurrentItem());					
+					if (PARTICLE != null) {
+						final Player PLAYER = (Player) event.getWhoClicked();
+						SpleefPlayer.getPlayer(PLAYER.getUniqueId(), new FutureCallback<SpleefPlayer>() {							
+							@Override
+							public void onSuccess(SpleefPlayer spleefPlayer) {
+								if (spleefPlayer.hasBought(PARTICLE)) {
+									if (ParticleCreatorTask.getParticleEffect(PLAYER) == PARTICLE) {	// if the player already selected the particle remove it
+										ParticleCreatorTask.removePlayer(PLAYER);
+										PLAYER.closeInventory();
+									} else {
+										ParticleCreatorTask.addPlayer(PLAYER, PARTICLE);
+										PLAYER.closeInventory();
+									}
+								} else {
+									if (spleefPlayer.getTotalPoints() < PARTICLE.getPrice()) {
+										PLAYER.sendMessage(Language.NOT_ENOUGH_POINTS_TO_BUY_PARTICLE.toString());
+									} else {
+										spleefPlayer.setTotalPoints(spleefPlayer.getTotalPoints() - PARTICLE.getPrice());
+										spleefPlayer.addEffect(PARTICLE);
+										ParticleCreatorTask.addPlayer(PLAYER, PARTICLE);
+										PLAYER.closeInventory();
+										PLAYER.playSound(PLAYER.getLocation(), Sound.LEVEL_UP, 1F, 1F);
+										SpleefArena arena = PlayerManager.getArena(PLAYER.getUniqueId());
+										if (arena != null) {	// update the scoreboard
+											arena.setScoreboard(PLAYER);
+										}
+									}
+								}
+							}
+							
+							@Override
+							public void onFailure(Throwable t) {
+								SpleefMain.getInstance().log(Level.SEVERE, "Couldn't access player database... :/ (player: " + PLAYER.getName());
+								t.printStackTrace();
+							}
+						});
+						
+					}
+				}
 			}
 		}
 	}
