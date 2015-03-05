@@ -84,7 +84,7 @@ public class PetMaker {
 			
 					"org.bukkit.block.Block target = null; " +
 					"try { " +
-						"target = p.getTargetBlock(null, 20); " +
+						"target = p.getTargetBlock((HashSet<Byte>) null, 20); " +
 					"} catch (IllegalStateException e) { " +
 						"target = p.getLocation().getBlock(); " +
 					"}" +	

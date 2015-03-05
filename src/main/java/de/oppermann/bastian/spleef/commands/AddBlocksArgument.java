@@ -1,8 +1,8 @@
 package de.oppermann.bastian.spleef.commands;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -112,8 +112,8 @@ public class AddBlocksArgument extends AbstractArgument {
 			// looking at
 			if (args[2].equalsIgnoreCase("lookingAt")) {
 				try {
-					Set<Material> nullSet = null;
-					Block block = player.getTargetBlock(nullSet, 400);
+					@SuppressWarnings("deprecation")	// who cares?
+					Block block = player.getTargetBlock((HashSet<Byte>) null, 400);
 					if (block == null) {
 						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
 					} else if (block.getType() == Material.AIR) {
