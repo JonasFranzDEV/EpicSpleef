@@ -14,6 +14,7 @@ import com.google.common.collect.Sets;
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.util.Language;
+import de.oppermann.bastian.spleef.util.SpectateType;
 import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.command.AbstractArgument;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand.CommandHelp;
@@ -125,20 +126,6 @@ public class SetValueArgument extends AbstractArgument {
 				arena.getConfiguration().setCustomInventory(enabled);
 				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", enabled);
 				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
-				return CommandResult.SUCCESS;
-			}
-			
-			if (args[2].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY.toString())) {				
-				ItemStack[] contents = player.getInventory().getContents();
-				for (int i = 0; i < contents.length; i++) {					
-					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.items." + i, contents[i]);					
-				}
-				
-				arena.getConfiguration().setCustomInventoryContents(contents);
-				arena.getConfiguration().setCustomInventory(true);
-				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", true);
-				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
-				player.sendMessage(Language.SUCCESSFULLY_SET_CUSTOMINVENTORY.toString());
 				return CommandResult.SUCCESS;
 			}
 			
@@ -327,10 +314,82 @@ public class SetValueArgument extends AbstractArgument {
 				return CommandResult.SUCCESS;
 			}
 			
+			if (args[2].equalsIgnoreCase(Language.FLAG_SPECTATE_TYPE.toString())) {
+				
+				SpectateType spectateType = SpectateType.NONE;
+				String spectateTypeName = Language.SPECTATE_TYPE_NONE.toString();
+				if (args[3].equalsIgnoreCase(Language.SPECTATE_TYPE_NORMAL.toString())) {
+					spectateType = SpectateType.NORMAL;
+					spectateTypeName = Language.SPECTATE_TYPE_NORMAL.toString();
+				}
+				if (args[3].equalsIgnoreCase(Language.SPECTATE_TYPE_NORMAL_FLYING.toString())) {
+					spectateType = SpectateType.NORMAL_FLYING;
+					spectateTypeName = Language.SPECTATE_TYPE_NORMAL_FLYING.toString();
+				}
+				if (args[3].equalsIgnoreCase(Language.SPECTATE_TYPE_GAMEMODE_3.toString())) {
+					spectateType = SpectateType.GAMEMODE_3;
+					spectateTypeName = Language.SPECTATE_TYPE_GAMEMODE_3.toString();
+				}
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_SPECTATE_TYPE.toString()).replace("%value%", spectateTypeName));
+				
+				arena.getConfiguration().setSpectateType(spectateType);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateType", spectateType.name().toLowerCase());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
 			player.sendMessage(Language.UNKNOWN_FLAG.toString().replace("%flag%", args[2]));
 			return CommandResult.SUCCESS;
 		}
-		return CommandResult.ERROR;	// should never happen
+		
+		// flags without arguments
+		if (args.length == 3) {
+			if (!player.hasPermission(getPermission())) {
+				return CommandResult.NO_PERMISSION;
+			}
+			
+			SpleefArena arena = null;
+			for (SpleefArena sArena : SpleefArena.getSpleefArenas()) {
+				if (sArena.getName().equals(args[1])) {
+					arena = sArena;
+					break;
+				}
+			}
+			
+			if (arena == null) {
+				player.sendMessage(Language.NO_ARENA_WITH_NAME.toString().replace("%arena%", args[1]));
+				return CommandResult.SUCCESS;
+			}
+			
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_CUSTOMINVENTORY.toString())) {				
+				ItemStack[] contents = player.getInventory().getContents();
+				for (int i = 0; i < contents.length; i++) {					
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.items." + i, contents[i]);					
+				}
+				
+				arena.getConfiguration().setCustomInventoryContents(contents);
+				arena.getConfiguration().setCustomInventory(true);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("customInventory.enabled", true);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				player.sendMessage(Language.SUCCESSFULLY_SET_CUSTOMINVENTORY.toString());
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_SPECTATE_LOCATION.toString())) {
+				arena.getConfiguration().setSpectateLocation(player.getLocation());
+				
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateLocation.x", player.getLocation().getX());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateLocation.y", player.getLocation().getY());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateLocation.z", player.getLocation().getZ());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateLocation.yaw", player.getLocation().getYaw());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("spectateLocation.pitch", player.getLocation().getPitch());
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				player.sendMessage(Language.SUCCESSFULLY_SET_SPECTATE_LOCATION.toString());
+				return CommandResult.SUCCESS;
+			}
+		}
+		return CommandResult.ERROR;
 	}
 
 	/*
@@ -373,6 +432,8 @@ public class SetValueArgument extends AbstractArgument {
 			list.add(Language.FLAG_GRAVITY.toString());
 			list.add(Language.FLAG_MIN_PLAYERS.toString());
 			list.add(Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString());
+			list.add(Language.FLAG_SPECTATE_TYPE.toString());
+			list.add(Language.FLAG_SPECTATE_LOCATION.toString());
 		}
 		if (args.length == 4) {
 			if (args[2].equalsIgnoreCase(Language.FLAG_ENABLED.toString())
@@ -440,6 +501,13 @@ public class SetValueArgument extends AbstractArgument {
 				list.add("12");
 				list.add("16");
 			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_SPECTATE_TYPE.toString())) {
+				list.add(Language.SPECTATE_TYPE_NONE.toString());
+				list.add(Language.SPECTATE_TYPE_NORMAL.toString());
+				list.add(Language.SPECTATE_TYPE_NORMAL_FLYING.toString());
+				list.add(Language.SPECTATE_TYPE_GAMEMODE_3.toString());
+			}
 		}
 		return list;
 	}
@@ -450,7 +518,7 @@ public class SetValueArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_SETVALUE + " " + Language.ARGUMENT_ARENA + " " + Language.ARGUMENT_FLAG + " " + Language.ARGUMENT_VALUE, getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_SETVALUE + " " + Language.ARGUMENT_ARENA + " " + Language.ARGUMENT_FLAG + " " + Language.ARGUMENT_VALUE_OPTIONAL, getDescription());
 	}
 
 }

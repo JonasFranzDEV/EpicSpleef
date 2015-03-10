@@ -1,5 +1,6 @@
 package de.oppermann.bastian.spleef.util;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -61,6 +62,10 @@ public class SpleefArenaConfiguration {
 	private EntityType vehicle = null;
 	
 	private boolean instanstBlockDestroy = false;
+	
+	private SpectateType spectateType = SpectateType.NORMAL;
+	
+	private Location spectateLocation = null;
 	
 	public SpleefArenaConfiguration() {
 		
@@ -256,6 +261,22 @@ public class SpleefArenaConfiguration {
 
 	public void setInstanstBlockDestroy(boolean instanstBlockDestroy) {
 		this.instanstBlockDestroy = instanstBlockDestroy;
+	}
+
+	public SpectateType getSpectateType() {
+		return spectateType;
+	}
+
+	public void setSpectateType(SpectateType spectateType) {
+		this.spectateType = spectateType;
+	}
+
+	public Location getSpectateLocation() {
+		return spectateLocation;
+	}
+
+	public void setSpectateLocation(Location spectateLocation) {
+		this.spectateLocation = spectateLocation;
 	}
 
 }

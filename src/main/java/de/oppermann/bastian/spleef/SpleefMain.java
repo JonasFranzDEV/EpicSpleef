@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -42,6 +43,7 @@ import de.oppermann.bastian.spleef.listener.InventoryOpenListener;
 import de.oppermann.bastian.spleef.listener.PlayerCommandPreprocessListener;
 import de.oppermann.bastian.spleef.listener.PlayerDropItemListener;
 import de.oppermann.bastian.spleef.listener.PlayerInteractListener;
+import de.oppermann.bastian.spleef.listener.PlayerJoinListener;
 import de.oppermann.bastian.spleef.listener.PlayerMoveListener;
 import de.oppermann.bastian.spleef.listener.PlayerQuitListener;
 import de.oppermann.bastian.spleef.listener.ProjectileHitListener;
@@ -58,6 +60,7 @@ import de.oppermann.bastian.spleef.util.PlayerDismountCheckTask;
 import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
+import de.oppermann.bastian.spleef.util.SpectateType;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.UpdateChecker;
@@ -215,6 +218,7 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerCommandPreprocessListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerDropItemListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerInteractListener(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
 		Bukkit.getPluginManager().registerEvents(new ProjectileHitListener(), this);
@@ -306,7 +310,11 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setLobby(lobby);
 				
 				configuration.setDisabled(!arenaConfig.getConfig().getBoolean("enabled", true));
-				configuration.setMode(SpleefMode.valueOf(arenaConfig.getConfig().getString("mode", "normal").toUpperCase()));	// TODO check if mode is valid
+				try {
+					configuration.setMode(SpleefMode.valueOf(arenaConfig.getConfig().getString("mode", "normal").toUpperCase()));
+				} catch (IllegalArgumentException e) {
+					log(Level.SEVERE, "Unknown mode: " + arenaConfig.getConfig().getString("mode", "normal").toUpperCase() + "; Using mode NORMAL.");
+				}
 				configuration.setModifyGravity(arenaConfig.getConfig().getBoolean("modifygravity.enable", false));
 				configuration.setGravity(arenaConfig.getConfig().getDouble("modifygravity.gravity", 0.5D));
 				configuration.setEnableSnowballs(arenaConfig.getConfig().getBoolean("snowballs.enable", true));
@@ -320,11 +328,25 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setMoneyWinningReward(arenaConfig.getConfig().getInt("reward.money.winning"));
 				configuration.setMoneyParticipationReward(arenaConfig.getConfig().getInt("reward.money.participation"));
 				try {
-					configuration.setVehicle(arenaConfig.getConfig().getString("vehicle") == null? null : EntityType.valueOf(arenaConfig.getConfig().getString("vehicle").toUpperCase()));
-				} catch(IllegalArgumentException e) {
+					configuration.setVehicle(arenaConfig.getConfig().getString("vehicle") == null ? null : EntityType.valueOf(arenaConfig.getConfig().getString("vehicle").toUpperCase()));
+				} catch (IllegalArgumentException e) {
 					// unknown vehicle or "none"
 				}
 				configuration.setInstanstBlockDestroy(arenaConfig.getConfig().getBoolean("instanstBlockDestroy", false));
+				try {
+					configuration.setSpectateType(SpectateType.valueOf(arenaConfig.getConfig().getString("spectateType", "normal").toUpperCase()));
+				} catch (IllegalArgumentException e) {
+					log(Level.SEVERE, "Unknown spectateType: " + arenaConfig.getConfig().getString("mode", "normal").toUpperCase() + "; Using type NORMAL.");
+				}
+				
+				Location spectateLocation = new Location(Bukkit.getWorld(world), 0, 0, 0, 0, 0);
+				spectateLocation.setX(arenaConfig.getConfig().getInt("spectateLocation.x", 0));
+				spectateLocation.setY(arenaConfig.getConfig().getInt("spectateLocation.y", 0));
+				spectateLocation.setZ(arenaConfig.getConfig().getInt("spectateLocation.z", 0));
+				spectateLocation.setYaw((float) arenaConfig.getConfig().getDouble("spectateLocation.yaw", 0));
+				spectateLocation.setPitch((float) arenaConfig.getConfig().getDouble("spectateLocation.pitch", 0));
+				
+				configuration.setSpectateLocation(spectateLocation);
 				
 				ItemStack[] customInventoryContents = new ItemStack[9*4];
 				for (int i = 0; i < customInventoryContents.length; i++) {

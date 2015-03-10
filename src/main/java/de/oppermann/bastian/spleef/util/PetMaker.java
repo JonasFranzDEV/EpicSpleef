@@ -38,7 +38,6 @@ public class PetMaker {
 	static {
 		String path = Bukkit.getServer().getClass().getPackage().getName();
 		VERSION = path.substring(path.lastIndexOf(".") + 1, path.length());
-		
 		try {
 			CLASS_ENTITY_INSENTIENT = Class.forName("net.minecraft.server." + VERSION + ".EntityInsentient");
 			CLASS_PATHFINDER_GOAL = Class.forName("net.minecraft.server." + VERSION + ".PathfinderGoal");
@@ -84,7 +83,7 @@ public class PetMaker {
 			
 					"org.bukkit.block.Block target = null; " +
 					"try { " +
-						"target = p.getTargetBlock((HashSet<Byte>) null, 20); " +
+						"target = p.getTargetBlock(null, 20); " +
 					"} catch (IllegalStateException e) { " +
 						"target = p.getLocation().getBlock(); " +
 					"}" +	

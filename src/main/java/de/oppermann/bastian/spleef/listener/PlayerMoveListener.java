@@ -54,7 +54,7 @@ public class PlayerMoveListener implements Listener {
 			}
 			
 			if (arena.getLowestBlock() > toY) {
-				arena.removePlayer(player);
+				arena.onLose(player);
 				return;
 			}
 

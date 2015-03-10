@@ -27,16 +27,36 @@ public class TitleManager {
 		String path = Bukkit.getServer().getClass().getPackage().getName();
 		VERSION = path.substring(path.lastIndexOf(".") + 1, path.length());
 		
-		try {
-			CLASS_ENUM_TITLE_ACTION = Class.forName("net.minecraft.server." + VERSION + ".EnumTitleAction");
+		try {						
 			CLASS_CRAFT_PLAYER = Class.forName("org.bukkit.craftbukkit." + VERSION + ".entity.CraftPlayer");
 			CLASS_PACKET_PLAY_OUT_TITLE = Class.forName("net.minecraft.server." + VERSION + ".PacketPlayOutTitle");
-			CLASS_CHAT_SERIALIZER = Class.forName("net.minecraft.server." + VERSION + ".ChatSerializer");
 			CLASS_I_CHAT_BASE_COMPONENT = Class.forName("net.minecraft.server." + VERSION + ".IChatBaseComponent");
 			CLASS_PACKET = Class.forName("net.minecraft.server." + VERSION + ".Packet");
+			if (!UpdateChecker.compareMinecraftVersionServerIsHigherOrEqual("1.8.3")) {
+				CLASS_ENUM_TITLE_ACTION = Class.forName("net.minecraft.server." + VERSION + ".EnumTitleAction");
+				CLASS_CHAT_SERIALIZER = Class.forName("net.minecraft.server." + VERSION + ".ChatSerializer");
+			} else {
+				for (Class<?> clazz : CLASS_PACKET_PLAY_OUT_TITLE.getDeclaredClasses()) {
+					if (clazz.getSimpleName().equals("EnumTitleAction")) {
+						CLASS_ENUM_TITLE_ACTION = clazz;
+						break;
+					}
+				}
+				for (Class<?> clazz : CLASS_I_CHAT_BASE_COMPONENT.getDeclaredClasses()) {
+					if (clazz.getSimpleName().equals("ChatSerializer")) {
+						CLASS_CHAT_SERIALIZER = clazz;
+						break;
+					}
+				}
+			}
+			if (CLASS_ENUM_TITLE_ACTION == null || CLASS_CHAT_SERIALIZER == null) {
+				SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality. (can't find classes EnumTitleAction or ChatSerializer)");
+				nmsFailed = true;
+			}
 		} catch (ClassNotFoundException e) {
 			// incompatible version
 			SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality.");
+			e.printStackTrace();
 			nmsFailed = true;
 		}
 

@@ -28,12 +28,26 @@ public class CraftBukkitUtil {
 		try {
 			CLASS_CRAFT_PLAYER = Class.forName("org.bukkit.craftbukkit." + VERSION + ".entity.CraftPlayer");
 			CLASS_PACKET_PLAY_OUT_CHAT = Class.forName("net.minecraft.server." + VERSION + ".PacketPlayOutChat");
-			CLASS_CHAT_SERIALIZER = Class.forName("net.minecraft.server." + VERSION + ".ChatSerializer");
 			CLASS_I_CHAT_BASE_COMPONENT = Class.forName("net.minecraft.server." + VERSION + ".IChatBaseComponent");
 			CLASS_PACKET = Class.forName("net.minecraft.server." + VERSION + ".Packet");
+			if (!UpdateChecker.compareMinecraftVersionServerIsHigherOrEqual("1.8.3")) {
+				CLASS_CHAT_SERIALIZER = Class.forName("net.minecraft.server." + VERSION + ".ChatSerializer");
+			} else {
+				for (Class<?> clazz : CLASS_I_CHAT_BASE_COMPONENT.getDeclaredClasses()) {
+					if (clazz.getSimpleName().equals("ChatSerializer")) {
+						CLASS_CHAT_SERIALIZER = clazz;
+						break;
+					}
+				}
+			}
+			if (CLASS_CHAT_SERIALIZER == null) {
+				SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality. (can't find class ChatSerializer)");
+				nmsFailed = true;
+			}
 		} catch (ClassNotFoundException e) {
 			// incompatible version
 			SpleefMain.getInstance().log(Level.SEVERE, "Could not access NMS classes. Please use a plugin version which is compatible with your server version for full functionality.");
+			e.printStackTrace();
 			nmsFailed = true;
 		}
 

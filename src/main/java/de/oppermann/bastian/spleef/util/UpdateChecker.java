@@ -48,6 +48,11 @@ public class UpdateChecker {
     private static final String API_QUERY = "/servermods/files?projectIds=";
     private static final String API_HOST = "https://api.curseforge.com";
     
+    private static final long QUERY_DELAY_MILLIS = 5 * 60 * 1000;
+    
+    private static EpicSpleefVersion[] lastQuery = null;
+    private static long lastQueryTimestamp = 0;
+    
     /**
      * Gets the newest version.
      * 
@@ -72,20 +77,20 @@ public class UpdateChecker {
 			String[] pluginGameVersionArray = pluginGameVersion.split("\\.");
 
 			// just check the first and the second, cause the 3rd is unimportant most of the time (no huge api changes)
-			int serverFist = Integer.valueOf(serverVersionArray[0]);
+			int serverFirst = Integer.valueOf(serverVersionArray[0]);
 			int serverSecond = Integer.valueOf(serverVersionArray[1]);
-			int pluginFist = Integer.valueOf(pluginGameVersionArray[0]);
+			int pluginFirst = Integer.valueOf(pluginGameVersionArray[0]);
 			int pluginSecond = Integer.valueOf(pluginGameVersionArray[1]);					
 			
-			if (serverFist > pluginFist) {
+			if (serverFirst > pluginFirst) {
 				continue;
 			}
 			
-			if (serverFist == pluginFist && serverSecond > pluginSecond) {
+			if (serverFirst == pluginFirst && serverSecond > pluginSecond) {
 				continue;
 			}
 			
-			if (!unsafeUpdates && (serverFist != pluginFist || serverSecond != pluginSecond)) {
+			if (!unsafeUpdates && (serverFirst != pluginFirst || serverSecond != pluginSecond)) {
 				continue;	// no safe match
 			}
 			
@@ -114,6 +119,58 @@ public class UpdateChecker {
 			newest = version;
 		}
 		return newest;
+    }
+    
+    /**
+     * Compares two minecraft versions.
+     * 
+     * @return True if the server is equal or higher.
+     */
+    public static boolean compareMinecraftVersionServerIsHigherOrEqual(String version) {
+    	String serverVersion = Bukkit.getVersion();
+		serverVersion = serverVersion.substring(serverVersion.indexOf("(MC: ") + 5, serverVersion.length());
+		serverVersion = serverVersion.substring(0, serverVersion.lastIndexOf(")"));
+		String[] serverVersionArray = serverVersion.split("\\.");		
+		String[] toCompareVersionArray = version.split("\\.");
+		
+		if (serverVersionArray.length == 2) {
+			int serverFirst = Integer.valueOf(serverVersionArray[0]);
+			int toCompareFirst = Integer.valueOf(toCompareVersionArray[0]);
+			if (toCompareFirst != serverFirst) {
+				return toCompareFirst < serverFirst;
+			}
+			int serverSecond = Integer.valueOf(serverVersionArray[1]);
+			int toCompareSecond = Integer.valueOf(toCompareVersionArray[1]);
+			if (toCompareSecond != serverSecond) {
+				return toCompareSecond < serverSecond;
+			}
+			if (toCompareVersionArray.length == 3) {
+				return false;
+			}
+			return true;
+		}
+		if (serverVersionArray.length == 3) {
+			int serverFirst = Integer.valueOf(serverVersionArray[0]);
+			int toCompareFirst = Integer.valueOf(toCompareVersionArray[0]);
+			if (toCompareFirst != serverFirst) {
+				return toCompareFirst < serverFirst;
+			}
+			int serverSecond = Integer.valueOf(serverVersionArray[1]);
+			int toCompareSecond = Integer.valueOf(toCompareVersionArray[1]);
+			if (toCompareSecond != serverSecond) {
+				return toCompareSecond < serverSecond;
+			}
+			if (toCompareVersionArray.length != 3) {
+				return true;
+			}
+			int serverThird = Integer.valueOf(serverVersionArray[2]);
+			int toCompareThird = Integer.valueOf(toCompareVersionArray[2]);
+			if (toCompareThird != serverThird) {
+				return toCompareThird < serverThird;
+			}
+			return true;
+		}
+    	return false;
     }
     
     /**
@@ -267,6 +324,10 @@ public class UpdateChecker {
     		throw new IllegalStateException("Must not be invoked from the main thread.");
     	}
     	
+    	if (lastQueryTimestamp + QUERY_DELAY_MILLIS > System.currentTimeMillis()) {	// mojang does'nt like spam
+    		return lastQuery;
+    	}
+    	
         URL url = null;
 
         try {
@@ -324,6 +385,8 @@ public class UpdateChecker {
                 versions[i] = new EpicSpleefVersion(versionName, versionLink, versionType, versionFileName, versionGameVersion);
 			}
             
+            lastQuery = versions;
+            lastQueryTimestamp = System.currentTimeMillis();
             return versions;
         } catch (IOException e) {
             // There was an error reading the query

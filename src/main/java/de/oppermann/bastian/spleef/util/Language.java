@@ -102,6 +102,8 @@ public enum Language {
 	SUCCESSFULLY_SET_LOBBY(ChatColor.GREEN + "Set lobby."),
 	
 	SUCCESSFULLY_SET_CUSTOMINVENTORY(ChatColor.GREEN + "Set custom inventory to your resent inventory and enabled it."),
+	
+	SUCCESSFULLY_SET_SPECTATE_LOCATION(ChatColor.GREEN + "Set spectate location."),
 
 	SUCCESSFULLY_SET_VALUE(ChatColor.GREEN + "Set " + ChatColor.GOLD + "%flag%" + ChatColor.GREEN + " to " + ChatColor.GOLD + "%value%" + ChatColor.GREEN + "."),
 	UNKNOWN_FLAG(ChatColor.RED + "There's no flag called " + ChatColor.GOLD + "%flag" + ChatColor.RED + "."),
@@ -130,7 +132,8 @@ public enum Language {
 	UPDATE_NO_NEW_VERSION_BUT_UNSAFE(ChatColor.RED + "There's an update, but for a newer gameversion (%gameVersion%).%n" + ChatColor.RED + "Type " + ChatColor.GOLD + "%updateCommand%" + ChatColor.RED + " to update!"),
 	UPDATE_DOWNLOAD_SUCCESSFULLY_NOW_INSTALL(ChatColor.GREEN + "Successfully downloaded plugin. Restarting now!"),
 	UPDATE_DOWNLOAD_SUCCESSFULLY(ChatColor.GREEN + "Successfully downloaded plugin!"),
-	
+	UPDATE_YOUR_VERSION_IS_OUTDATED(ChatColor.RED + "EpicSpleef version %version% for minecraft %mcVersion% is out!%n" + ChatColor.RED + "You are still running version %oldVersion%%n" + ChatColor.RED + "Type " + ChatColor.GOLD + "%updateCommand%" + ChatColor.RED + " to update!"),
+
 	UNKNOWN_ENTITY(ChatColor.RED + "There's no (valid) entity with this name!"),
 	
 	ARENAS_MUST_BE_THE_SAME(ChatColor.RED + "You must repeate the arena argument!"),	
@@ -165,6 +168,8 @@ public enum Language {
 	FLAG_GRAVITY("gravity"),
 	FLAG_MIN_PLAYERS("minPlayers"),
 	FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN("requiredPlayersToStartCountdown"),
+	FLAG_SPECTATE_TYPE("spectateType"),
+	FLAG_SPECTATE_LOCATION("spectateLocation"),
 	
 	// values
 	VALUE_TRUE("true"),
@@ -189,6 +194,12 @@ public enum Language {
 	UPDATE_PROGRESS(ChatColor.GREEN + "Downloading update: %percentage%%. (%downloaded% KB / %total% KB"),
 	UPDATE_ERROR(ChatColor.RED + "An error occured while downloading file!"),
 	UPDATE_NO_UPDATES(ChatColor.RED + "No updates found!"),
+	
+	// spectate types
+	SPECTATE_TYPE_NONE("none"),
+	SPECTATE_TYPE_NORMAL("normal"),
+	SPECTATE_TYPE_NORMAL_FLYING("normalFlying"),
+	SPECTATE_TYPE_GAMEMODE_3("gamemode3"),
 	
 	// single words
 	ARGUMENT_ARENA("<arena>"),

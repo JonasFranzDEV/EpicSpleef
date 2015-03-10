@@ -21,7 +21,7 @@ public class ParticleCreatorTask implements Runnable {
 	public void run() {
 		synchronized (PLAYERS) {
 			for (UUID playerUUID : PLAYERS.keySet()) {
-				SpleefArena arena = PlayerManager.getArena(playerUUID);
+				SpleefArena arena = PlayerManager.getPlayerArena(playerUUID);
 				if (arena == null) {
 					continue;
 				}

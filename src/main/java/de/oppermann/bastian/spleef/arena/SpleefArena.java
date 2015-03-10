@@ -3,6 +3,7 @@ package de.oppermann.bastian.spleef.arena;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import net.milkbowl.vault.economy.Economy;
 
@@ -37,6 +38,7 @@ import de.oppermann.bastian.spleef.util.PlayerMemory;
 import de.oppermann.bastian.spleef.util.PluginChecker;
 import de.oppermann.bastian.spleef.util.ScoreboardConfiguration;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
+import de.oppermann.bastian.spleef.util.SpectateType;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefPlayer;
 import de.oppermann.bastian.spleef.util.TitleManager;
@@ -56,6 +58,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	private final ArrayList<SpleefBlock> BLOCKS = new ArrayList<>();	// stores all the blocks of the arena that should be reseted
 	private final ArrayList<SpleefSpawnLocation> SPAWNLOCATIONS = new ArrayList<>();	// stores the spawn locations
 	private final ArrayList<UUID> PLAYERS = new ArrayList<>();	// the players in the arena
+	private final ArrayList<UUID> SPECTATORS = new ArrayList<>();	// the spectators in the arena
 	private final ArrayList<SpleefSpawnLocation> FREE_SPAWN_LOCATIONS = new ArrayList<>();	// the locations that are not in use
 	private final HashMap<UUID, SpleefSpawnLocation> USED_SPAWN_LOCATION = new HashMap<>();
 	private final HashMap<UUID, PlayerMemory> MEMORIES = new HashMap<>();
@@ -113,7 +116,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")	// cause mojang sucks
+	@SuppressWarnings("deprecation")	// cause mojang/bukkit/everyone sucks
 	private void fillArena(Material type, byte data) {
 		for (SpleefBlock block : BLOCKS) {
 			block.toBlock(getWorld()).setTypeIdAndData(type.getId(), data, true);
@@ -355,7 +358,26 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					break;
 				}
 		}
+		for (UUID uuidPlayer : SPECTATORS) {
+			Player player = Bukkit.getPlayer(uuidPlayer);
+			GravityModifier.resetGravity(uuidPlayer);
+			PlayerMemory memory = MEMORIES.get(uuidPlayer);
+			memory.restore(player);
+			switch (reason) {
+				case EDIT_ARENA:
+					player.sendMessage(Language.STOP_REASON_EDIT_ARENA.toString());
+					break;
+				case PLUGIN_DISABLED:
+					player.sendMessage(Language.STOP_REASON_PLUGIN_DISABLED.toString());
+					break;	
+				default:
+					// should never happen
+					player.sendMessage(ChatColor.RED + "Something strange happend! :(");
+					break;
+			}
+		}
 		PLAYERS.clear();
+		SPECTATORS.clear();
 		FREE_SPAWN_LOCATIONS.clear();
 		FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
 		USED_SPAWN_LOCATION.clear();
@@ -370,11 +392,43 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 * Removes a player from the arena.
 	 */
 	public void removePlayer(Player player) {
+		removePlayer(player, false);
+	}
+	
+	/**
+	 * Removes a player from the arena.
+	 */
+	public void removePlayer(Player player, boolean spectate) {
 		Validator.validateNotNull(player, "player");
-		
-		if (!PLAYERS.contains(player.getUniqueId())) {
-			throw new IllegalArgumentException("The player " + player.getName() + " is not in the arena");
+
+		boolean isSpectator = SPECTATORS.contains(player.getUniqueId());
+		if (isSpectator) {
+			spectate = false;	// a spectator can't get a spectator...
 		}
+		if (PLAYERS.size() == 2) {
+			spectate = false;
+		}
+		
+		if (CONFIGURATION.getSpectateLocation() == null && spectate) {
+			switch (CONFIGURATION.getSpectateType()) {
+			case NORMAL:
+				spectate = false;
+				break;
+			case NORMAL_FLYING:
+				spectate = false;
+				break;
+			case GAMEMODE_3:
+				// you don't hinder anyone in gamemode 3
+				break;
+			case NONE:
+				spectate = false;
+				break;
+			}
+		}
+		
+		if (!PLAYERS.contains(player.getUniqueId()) && !isSpectator) {
+			throw new IllegalArgumentException("The player " + player.getName() + " is not in the arena");
+		}		
 		
 		PlayerDismountCheckTask.removePlayer(player);
 		
@@ -382,16 +436,44 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			player.getVehicle().remove();
 		}
 		
-		SpleefSpawnLocation spawnLoc = USED_SPAWN_LOCATION.get(player.getUniqueId());
-		USED_SPAWN_LOCATION.remove(player.getUniqueId());
-		FREE_SPAWN_LOCATIONS.add(spawnLoc);
-		PLAYERS.remove(player.getUniqueId());
-		PlayerMemory memory = MEMORIES.get(player.getUniqueId());
-		MEMORIES.remove(player.getUniqueId());
-		memory.restore(player);
+		if (!isSpectator) {
+			SpleefSpawnLocation spawnLoc = USED_SPAWN_LOCATION.get(player.getUniqueId());
+			USED_SPAWN_LOCATION.remove(player.getUniqueId());
+			FREE_SPAWN_LOCATIONS.add(spawnLoc);
+			PLAYERS.remove(player.getUniqueId());
+		} else {
+			SPECTATORS.remove(player.getUniqueId());
+		}
+		
+		if (!spectate) {
+			PlayerMemory memory = MEMORIES.get(player.getUniqueId());
+			MEMORIES.remove(player.getUniqueId());			
+			memory.restore(player);			
+		} else {
+			if (CONFIGURATION.getSpectateLocation() != null) {
+				player.teleport(CONFIGURATION.getSpectateLocation());
+			}
+			SPECTATORS.add(player.getUniqueId());
+			if (CONFIGURATION.getSpectateType() == SpectateType.GAMEMODE_3) {
+				try {
+					player.setGameMode(GameMode.SPECTATOR);
+				} catch (Exception e) {
+					SpleefMain.getInstance().log(Level.SEVERE, "The spectate type of arena " + getName() + " is set to gamemode 3 but the server doesn't support gamemode 3! (older version than MC 1.8)");
+					// older versions of minecraft don't have a spectator mode :(
+				}
+			} else {
+				player.setGameMode(GameMode.ADVENTURE);
+			}
+			if (CONFIGURATION.getSpectateType() == SpectateType.NORMAL_FLYING) {
+				player.setAllowFlight(true);
+			}
+			player.getInventory().clear();
+			player.getInventory().setArmorContents(new ItemStack[4]);
+		}
+		
 		GravityModifier.resetGravity(player.getUniqueId());
 		
-		if (countdownIsActive() && playersAreInLobby()) {
+		if (countdownIsActive() && playersAreInLobby() && !isSpectator) {
 			if (PLAYERS.size() < CONFIGURATION.getMinPlayers()) {
 				Bukkit.getScheduler().cancelTask(countdownId);
 				countdownId = -1;
@@ -404,7 +486,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			}
 		}
 		
-		if (countdownIsActive() && !playersAreInLobby() && getConfiguration().getLobby() != null) {
+		if (countdownIsActive() && !playersAreInLobby() && getConfiguration().getLobby() != null && !isSpectator) {
 			if (PLAYERS.size() < CONFIGURATION.getMinPlayers()) {
 				for (UUID uuidPlayer : PLAYERS) {
 					Player other = Bukkit.getPlayer(uuidPlayer);
@@ -424,16 +506,18 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				}
 			}
 		} else {
-			if (countdownIsActive() && PLAYERS.size() < CONFIGURATION.getMinPlayers() && getConfiguration().getLobby() == null) {				
+			if (countdownIsActive() && PLAYERS.size() < CONFIGURATION.getMinPlayers() && getConfiguration().getLobby() == null && !isSpectator) {				
 				Bukkit.getScheduler().cancelTask(countdownId);
 				countdownId = 0;
 				countdownIsActive = false;
 			}
 		}
 		
-		updateSigns(-1);
+		if (!isSpectator) {
+			updateSigns(-1);
+		}
 		
-		if (getStatus() == GameStatus.ACTIVE) {
+		if (getStatus() == GameStatus.ACTIVE && !isSpectator) {
 			
 			// add loss to the playerstats
 			SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
@@ -460,6 +544,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				Bukkit.getPlayer(uuidPlayer).sendMessage(Language.PLAYER_ELIMINATED.toString().replace("%player%", player.getName()).replace("%prefix%", Language.PREFIX.toString()));
 			}
 			
+			for (UUID uuidPlayer : SPECTATORS) {
+				Bukkit.getPlayer(uuidPlayer).sendMessage(Language.PLAYER_ELIMINATED.toString().replace("%player%", player.getName()).replace("%prefix%", Language.PREFIX.toString()));
+			}
+			
 			if (PLAYERS.size() == 1) {
 				UUID winnerUUID = PLAYERS.get(0);
 				Player winner = Bukkit.getPlayer(winnerUUID);
@@ -470,10 +558,24 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 					winner.getVehicle().remove();
 				}
 				
+				for (UUID uuidPlayer : SPECTATORS) {
+					if (Bukkit.getPlayer(uuidPlayer).getVehicle() != null) {
+						Bukkit.getPlayer(uuidPlayer).getVehicle().remove();
+					}
+				}
+				
 				PlayerMemory winnerMemory = MEMORIES.get(winnerUUID);
 				winnerMemory.restore(winner);
 				
+				for (UUID uuidPlayer : SPECTATORS) {
+					PlayerMemory spectatorMemory = MEMORIES.get(uuidPlayer);
+					spectatorMemory.restore(Bukkit.getPlayer(uuidPlayer));
+				}
+				
 				player.sendMessage(Language.PLAYER_WON_GAME.toString().replace("%player%", winner.getName()));
+				for (UUID uuidPlayer : SPECTATORS) {
+					Bukkit.getPlayer(uuidPlayer).sendMessage(Language.PLAYER_WON_GAME.toString().replace("%player%", winner.getName()));
+				}
 				winner.sendMessage(Language.PLAYER_WHO_WON.toString().replace("%player%", winner.getName()));
 				
 				// add win to the playerstats
@@ -500,6 +602,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				
 				// reset arena
 				PLAYERS.clear();
+				SPECTATORS.clear();;
 				FREE_SPAWN_LOCATIONS.clear();
 				FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
 				USED_SPAWN_LOCATION.clear();
@@ -518,8 +621,11 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 * Called if the player falls under the lowest block.
 	 */
 	public void onLose(Player player) {
-		// TODO spectator mode
-		removePlayer(player);
+		if (PLAYERS.contains(player)) {
+			removePlayer(player, CONFIGURATION.getSpectateType() != SpectateType.NONE);
+		} else {
+			// is spectator -> Spectators can't lose...
+		}
 	}
 	
 	/**
@@ -683,6 +789,13 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 */
 	public ArrayList<UUID> getPlayers() {
 		return new ArrayList<UUID>(PLAYERS);
+	}
+	
+	/**
+	 * Gets the spectators in the arena.
+	 */
+	public ArrayList<UUID> getSpectators() {
+		return new ArrayList<UUID>(SPECTATORS);
 	}
 	
 	/*
