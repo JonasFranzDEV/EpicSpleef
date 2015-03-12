@@ -114,6 +114,13 @@ public class SetValueArgument extends AbstractArgument {
 					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
 					return CommandResult.SUCCESS;
 				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_SPLEEF_RUN.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.SPLEEF_RUN);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_SPLEEF_RUN.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
 				player.sendMessage(Language.UNKNOWN_MODE.toString());
 				return CommandResult.SUCCESS;
 			}
@@ -458,6 +465,7 @@ public class SetValueArgument extends AbstractArgument {
 				list.add(Language.VALUE_MODE_NORMAL.toString());
 				list.add(Language.VALUE_MODE_BOWSPLEEF.toString());
 				list.add(Language.VALUE_MODE_SPLEGG.toString());
+				list.add(Language.VALUE_MODE_SPLEEF_RUN.toString());
 			}
 			if (args[2].equalsIgnoreCase(Language.FLAG_VEHICLE.toString())) {
 				try {

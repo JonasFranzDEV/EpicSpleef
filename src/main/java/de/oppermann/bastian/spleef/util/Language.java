@@ -177,7 +177,8 @@ public enum Language {
 	
 	VALUE_MODE_NORMAL("normal"),
 	VALUE_MODE_BOWSPLEEF("bowspleef"),
-	VALUE_MODE_SPLEGG("splegg"),	
+	VALUE_MODE_SPLEGG("splegg"),
+	VALUE_MODE_SPLEEF_RUN("spleefRun"),
 	
 	// items
 	HIDE_PLAYERS_ITEM(ChatColor.LIGHT_PURPLE + "Hide players"),

@@ -621,7 +621,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 * Called if the player falls under the lowest block.
 	 */
 	public void onLose(Player player) {
-		if (PLAYERS.contains(player)) {
+		if (PLAYERS.contains(player.getUniqueId())) {
 			removePlayer(player, CONFIGURATION.getSpectateType() != SpectateType.NONE);
 		} else {
 			// is spectator -> Spectators can't lose...

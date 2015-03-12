@@ -63,6 +63,7 @@ import de.oppermann.bastian.spleef.util.SimpleBlock;
 import de.oppermann.bastian.spleef.util.SpectateType;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
+import de.oppermann.bastian.spleef.util.SpleefRunTask;
 import de.oppermann.bastian.spleef.util.UpdateChecker;
 import de.oppermann.bastian.spleef.util.Validator;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand;
@@ -178,6 +179,7 @@ public class SpleefMain extends JavaPlugin {
 	private void runTasks() {
 		Bukkit.getScheduler().runTaskTimer(this, new PlayerDismountCheckTask(), 1, 1);
 		Bukkit.getScheduler().runTaskTimer(this, new ParticleCreatorTask(), 1, 1);
+		Bukkit.getScheduler().runTaskTimer(this, new SpleefRunTask(), 4, 4);
 	}
 	
 	private void metrics() {

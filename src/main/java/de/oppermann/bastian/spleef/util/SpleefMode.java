@@ -15,7 +15,8 @@ public enum SpleefMode {
 			return bow;
 		}
 	}.createItemStack(), new ItemStack(Material.ARROW, 1)),
-	SPLEGG(new ItemStack(Material.DIAMOND_HOE, 1));
+	SPLEGG(new ItemStack(Material.DIAMOND_HOE, 1)),
+	SPLEEF_RUN();
 	
 	private ItemStack[] items;
 	
