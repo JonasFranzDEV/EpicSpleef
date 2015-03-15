@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,6 +27,7 @@ import de.oppermann.bastian.spleef.commands.AddJoinSignArgument;
 import de.oppermann.bastian.spleef.commands.AddSpawnlocArgument;
 import de.oppermann.bastian.spleef.commands.CreateArgument;
 import de.oppermann.bastian.spleef.commands.DeleteArgument;
+import de.oppermann.bastian.spleef.commands.FlagsArgument;
 import de.oppermann.bastian.spleef.commands.JoinArgument;
 import de.oppermann.bastian.spleef.commands.LeaveArgument;
 import de.oppermann.bastian.spleef.commands.ReloadArgument;
@@ -233,6 +235,7 @@ public class SpleefMain extends JavaPlugin {
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new AddSpawnlocArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new CreateArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new DeleteArgument());
+		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new FlagsArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new JoinArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new LeaveArgument());
 		SpleefCommand.createIfNotExist("spleef", "spleef").registerArgument(new ReloadArgument());
@@ -334,7 +337,7 @@ public class SpleefMain extends JavaPlugin {
 				} catch (IllegalArgumentException e) {
 					// unknown vehicle or "none"
 				}
-				configuration.setInstanstBlockDestroy(arenaConfig.getConfig().getBoolean("instanstBlockDestroy", false));
+				configuration.setInstanstBlockDestroy(arenaConfig.getConfig().getBoolean("instantBlockDestroy", false));
 				try {
 					configuration.setSpectateType(SpectateType.valueOf(arenaConfig.getConfig().getString("spectateType", "normal").toUpperCase()));
 				} catch (IllegalArgumentException e) {
@@ -366,7 +369,15 @@ public class SpleefMain extends JavaPlugin {
 						int x = arenaConfig.getConfig().getInt("blocks." + block + ".x");
 						int y = arenaConfig.getConfig().getInt("blocks." + block + ".y");
 						int z = arenaConfig.getConfig().getInt("blocks." + block + ".z");
-						arena.addSpleefBlock(new SpleefBlock(x, y, z));
+						String strType = arenaConfig.getConfig().getString("blocks." + block + ".type", "SNOW_BLOCK");
+						byte data = (byte) arenaConfig.getConfig().getInt("blocks." + block + ".data", 0);
+						Material type = Material.SNOW_BLOCK;
+						try {
+							type = Material.valueOf(strType);
+						} catch (IllegalArgumentException e) {
+							
+						}
+						arena.addSpleefBlock(new SpleefBlock(x, y, z, type, data));
 						blocksCounter++;
 					}
 				}

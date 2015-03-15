@@ -38,9 +38,10 @@ public class AddBlocksArgument extends AbstractArgument {
 	 * (non-Javadoc)
 	 * @see de.oppermann.bastian.spleef.util.command.AbstractArgument#executeForPlayer(org.bukkit.entity.Player, org.bukkit.command.Command, java.lang.String[])
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {		
-		if (args.length == 3) {
+		if (args.length == 3 || args.length == 4) {
 			
 			if (!player.hasPermission(getPermission())) {
 				return CommandResult.NO_PERMISSION;
@@ -57,6 +58,15 @@ public class AddBlocksArgument extends AbstractArgument {
 			if (arena == null) {
 				player.sendMessage(Language.NO_ARENA_WITH_NAME.toString().replace("%arena%", args[1]));
 				return CommandResult.SUCCESS;
+			}
+			
+			boolean rememberMaterialFlag = false;
+			if (args.length == 4) {
+				if (args[3].equals(Language.COMMAND_ADD_BLOCKS_REMEMBER_MATERIAL_FLAG.toString())) {
+					rememberMaterialFlag = true;
+				} else {
+					player.sendMessage(Language.COMMAND_ADD_BLOCKS_UNKNOWN_FLAG.toString());
+				}
 			}
 			
 			if (args[2].equalsIgnoreCase("worldedit")) {
@@ -84,7 +94,13 @@ public class AddBlocksArgument extends AbstractArgument {
 				for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
 					for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
 						for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-							SpleefBlock block = new SpleefBlock(x, y, z);
+							SpleefBlock block;
+							if (rememberMaterialFlag) {
+								block = new SpleefBlock(x, y, z, min.getWorld().getBlockAt(x, y, z).getType(), min.getWorld().getBlockAt(x, y, z).getData());
+							} else {
+								block = new SpleefBlock(x, y, z, Material.SNOW_BLOCK, (byte) 0);
+							}
+							
 							if (blocks.contains(block)) {
 								continue;
 							}
@@ -94,14 +110,21 @@ public class AddBlocksArgument extends AbstractArgument {
 							accessor.getConfig().set("blocks." + counter + ".x", x);
 							accessor.getConfig().set("blocks." + counter + ".y", y);
 							accessor.getConfig().set("blocks." + counter + ".z", z);
+							accessor.getConfig().set("blocks." + counter + ".type", block.getType().name());
+							accessor.getConfig().set("blocks." + counter + ".data", block.getData());
 							
-							arena.addSpleefBlock(new SpleefBlock(x, y, z));
+							if (rememberMaterialFlag) {
+								arena.addSpleefBlock(new SpleefBlock(x, y, z, min.getWorld().getBlockAt(x, y, z).getType(), min.getWorld().getBlockAt(x, y, z).getData()));
+							} else {
+								arena.addSpleefBlock(new SpleefBlock(x, y, z, Material.SNOW_BLOCK, (byte) 0));
+							}
 						}
 					}
 				}
 				
 				accessor.saveConfig();
 				player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf((counter - blocks.size()))));
+				return CommandResult.SUCCESS;
 			}
 			
 			// TODO check if player is in arena world for lookingAt and standingOn
@@ -112,50 +135,55 @@ public class AddBlocksArgument extends AbstractArgument {
 			// looking at
 			if (args[2].equalsIgnoreCase("lookingAt")) {
 				try {
-					@SuppressWarnings("deprecation")	// who cares?
 					Block block = player.getTargetBlock((HashSet<Byte>) null, 400);
 					if (block == null) {
 						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
 					} else if (block.getType() == Material.AIR) {
 						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
 					} else {
-						ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena);
+						ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena, rememberMaterialFlag);
 						ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(arena.getName());
 						ArrayList<SpleefBlock> arenaBlocks = arena.getBlocks();
 						for (int i = 0; i < arenaBlocks.size(); i++) {
 							accessor.getConfig().set("blocks." + (i + 1) + ".x", arenaBlocks.get(i).getX());
 							accessor.getConfig().set("blocks." + (i + 1) + ".y", arenaBlocks.get(i).getY());
 							accessor.getConfig().set("blocks." + (i + 1) + ".z", arenaBlocks.get(i).getZ());
+							accessor.getConfig().set("blocks." + (i + 1) + ".type",arenaBlocks.get(i).getType().name());
+							accessor.getConfig().set("blocks." + (i + 1) + ".data", arenaBlocks.get(i).getData());
 						}
 						accessor.saveConfig();
 						player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf(blocks.size())));
 					}
 				} catch (IllegalStateException e) {
 					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
-				}		
+				}	
+				return CommandResult.SUCCESS;
 			}
 			
 			// standing on
 			if (args[2].equalsIgnoreCase("standingOn")) {
 				Block block = player.getLocation().getBlock().getRelative(0, -1, 0);
 				if (block.getType() != Material.AIR) {
-					ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena);
+					ArrayList<SpleefBlock> blocks = FloodfillAlgorithm.fill4(block.getWorld(), block.getX(), block.getY(), block.getZ(), arena, rememberMaterialFlag);
 					ConfigAccessor accessor = SpleefMain.getInstance().getArenaAccessor(arena.getName());
 					ArrayList<SpleefBlock> arenaBlocks = arena.getBlocks();
 					for (int i = 0; i < arenaBlocks.size(); i++) {
 						accessor.getConfig().set("blocks." + (i + 1) + ".x", arenaBlocks.get(i).getX());
 						accessor.getConfig().set("blocks." + (i + 1) + ".y", arenaBlocks.get(i).getY());
 						accessor.getConfig().set("blocks." + (i + 1) + ".z", arenaBlocks.get(i).getZ());
+						accessor.getConfig().set("blocks." + (i + 1) + ".type",arenaBlocks.get(i).getType().name());
+						accessor.getConfig().set("blocks." + (i + 1) + ".data", arenaBlocks.get(i).getData());
 					}
 					accessor.saveConfig();
 					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", String.valueOf(blocks.size())));
 				} else {
 					player.sendMessage(Language.SUCCESSFULLY_ADDED_BLOCKS.toString().replace("%amount%", "0"));
 				}
+				return CommandResult.SUCCESS;
 			}
-			return CommandResult.SUCCESS;
+			return CommandResult.ERROR;
 		}
-		return CommandResult.ERROR;	// should never happen
+		return CommandResult.ERROR;
 	}
 
 	/*
@@ -185,6 +213,9 @@ public class AddBlocksArgument extends AbstractArgument {
 			list.add("lookingAt");
 			list.add("standingOn");
 		}
+		if (args.length == 4) {
+			list.add(Language.COMMAND_ADD_BLOCKS_REMEMBER_MATERIAL_FLAG.toString());
+		}
 		return list;
 	}
 
@@ -194,7 +225,7 @@ public class AddBlocksArgument extends AbstractArgument {
 	 */
 	@Override
 	public CommandHelp getCommandHelp() {
-		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_BLOCKS + " " + Language.ARGUMENT_ARENA + " <worldedit/lookingAt/standingOn>", getDescription());
+		return new CommandHelp("/%cmd% " + Language.COMMAND_ADD_BLOCKS + " " + Language.ARGUMENT_ARENA + " <worldedit/lookingAt/standingOn> [" + Language.COMMAND_ADD_BLOCKS_REMEMBER_MATERIAL_FLAG.toString() + "]", getDescription());
 	}
 
 }

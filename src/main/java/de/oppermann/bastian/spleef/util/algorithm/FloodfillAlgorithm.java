@@ -15,7 +15,8 @@ public class FloodfillAlgorithm {
 		
 	}
 	
-	public static ArrayList<SpleefBlock> fill4(World world, int x, int y, int z, SpleefArena arena) {
+	@SuppressWarnings("deprecation")
+	public static ArrayList<SpleefBlock> fill4(World world, int x, int y, int z, SpleefArena arena, boolean rememberMaterial) {
 		ArrayList<SpleefBlock> blocks = new ArrayList<>();
 		
 		Material typeFrom = world.getBlockAt(x, y, z).getType();		
@@ -29,13 +30,18 @@ public class FloodfillAlgorithm {
 			SimpleBlock block = stack.pop();
 		 
 			if (world.getBlockAt(block.getX(), y, block.getZ()).getType() == typeFrom) {
-				world.getBlockAt(block.getX(), y, block.getZ()).setType(typeTo);	// sets the block to snow
 				if (!arena.isArenaBlock((world.getBlockAt(block.getX(), y, block.getZ())))) {
-					SpleefBlock spleefBlock = new SpleefBlock(block.getX(), y, block.getZ());
+					SpleefBlock spleefBlock;
+					if (rememberMaterial) {
+						spleefBlock = new SpleefBlock(block.getX(), y, block.getZ(), world.getBlockAt(block.getX(), y, block.getZ()).getType(), world.getBlockAt(block.getX(), y, block.getZ()).getData());
+					} else {
+						spleefBlock = new SpleefBlock(block.getX(), y, block.getZ(), Material.SNOW_BLOCK, (byte) 0);
+					}
 					arena.addSpleefBlock(spleefBlock);
 					blocks.add(spleefBlock);
 				}
-				
+
+				world.getBlockAt(block.getX(), y, block.getZ()).setType(typeTo);	// sets the block to snow
 				stack.push(new SimpleBlock(block.getX(), block.getZ() + 1));
 				stack.push(new SimpleBlock(block.getX(), block.getZ() - 1));
 				stack.push(new SimpleBlock(block.getX() + 1, block.getZ()));

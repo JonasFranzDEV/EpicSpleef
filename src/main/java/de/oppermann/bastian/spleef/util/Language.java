@@ -26,6 +26,8 @@ public enum Language {
 	
 	COMMAND_ADD_BLOCKS("addBlocks"),
 	COMMAND_ADD_BLOCKS_DESCRIPTION("Adds blocks to the arena"),
+	COMMAND_ADD_BLOCKS_REMEMBER_MATERIAL_FLAG("-saveMaterial"),
+	COMMAND_ADD_BLOCKS_UNKNOWN_FLAG(ChatColor.RED + "Unknown flag!"),
 	
 	COMMAND_SET_LOBBY("setLobby"),
 	COMMAND_SET_LOBBY_DESCRIPTION("Sets the lobby of the arena"),
@@ -48,6 +50,9 @@ public enum Language {
 	
 	COMMAND_RELOAD("reload"),
 	COMMAND_RELOAD_DESCRIPTION("Reloads the plugin"),
+	
+	COMMAND_FLAGS("flags"),
+	COMMAND_FLAGS_DESCRIPTION("Lists all avaiable flags. If an arena is typed, too, it will also show their current values."),
 	
 	COMMAND_UPDATE("update"),
 	COMMAND_UPDATE_DESCRIPTION("Lists all avaiable versions/updates, Downloads the latest version or installs it."),
@@ -126,6 +131,11 @@ public enum Language {
 	UPDATE_VERSIONLIST_VALUE(ChatColor.GOLD + " - " + ChatColor.GRAY + "Version %pluginVersion% for %gameVersion%"),
 	UPDATE_VERSIONLIST_POPUP(ChatColor.GOLD + "Click to copy update-command for " + ChatColor.LIGHT_PURPLE + "%pluginVersion%" + ChatColor.GOLD + "."),
 	UPDATE_VERSIONLIST_BOTTOM(ChatColor.GREEN + "-------------------- " + ChatColor.AQUA + "Click a version" + ChatColor.GREEN + " -------------------"),
+	
+	FLAGS_LIST_HEAD(ChatColor.GREEN + "------------------------- " + ChatColor.RED + "Flags" + ChatColor.GREEN + " ----------------------"),
+	FLAGS_LIST_WITH_VALUE(ChatColor.GOLD + " - " + ChatColor.BLUE + "%flag%" + ChatColor.GRAY + ": " + ChatColor.WHITE + "%value% " + ChatColor.ITALIC + "(default: %defaultValue%)"),
+	FLAGS_LIST_WITHOUT_VALUE(ChatColor.GOLD + " - " + ChatColor.BLUE + "%flag% " + ChatColor.WHITE + ChatColor.ITALIC + "(default: %defaultValue%)"),
+	FLAGS_LIST_BOTTOM(ChatColor.GREEN + "-----------------------------------------------------"),
 	
 	UPDATE_UNKNOWN_VERSION(ChatColor.RED + "Unknown version!"),
 	UPDATE_NO_NEW_VERSION(ChatColor.GREEN + "No updates available. :)"),

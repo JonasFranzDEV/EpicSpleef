@@ -7,6 +7,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import de.oppermann.bastian.spleef.SpleefMain;
 
@@ -34,13 +35,17 @@ public class BlockRemover {
 			return;
 		}
 		
+		block.setMetadata("BlockRemover", new FixedMetadataValue(SpleefMain.getInstance(), 1));
+		
 		block.setTypeIdAndData(Material.STAINED_CLAY.getId(), DyeColor.GREEN.getWoolData(), true);
 		
 		Bukkit.getScheduler().runTaskLater(SpleefMain.getInstance(), new Runnable() {			
 			@Override
 			public void run() {
 				Block block = world.getBlockAt(x, y, z);
-				block.setTypeIdAndData(Material.STAINED_CLAY.getId(), DyeColor.ORANGE.getWoolData(), true);
+				if (block.hasMetadata("BlockRemover")) {
+					block.setTypeIdAndData(Material.STAINED_CLAY.getId(), DyeColor.ORANGE.getWoolData(), true);
+				}
 			}
 		}, 10 * 1);
 		
@@ -48,7 +53,9 @@ public class BlockRemover {
 			@Override
 			public void run() {
 				Block block = world.getBlockAt(x, y, z);
-				block.setTypeIdAndData(Material.STAINED_CLAY.getId(), DyeColor.RED.getWoolData(), true);
+				if (block.hasMetadata("BlockRemover")) {
+					block.setTypeIdAndData(Material.STAINED_CLAY.getId(), DyeColor.RED.getWoolData(), true);
+				}
 			}
 		}, 10 * 2);
 		
@@ -56,8 +63,11 @@ public class BlockRemover {
 			@Override
 			public void run() {
 				Block block = world.getBlockAt(x, y, z);
-				block.setType(Material.AIR);
+				if (block.hasMetadata("BlockRemover")) {
+					block.setType(Material.AIR);
+				}
 				REMOVERS.remove(instance);
+				block.removeMetadata("BlockRemover", SpleefMain.getInstance());
 			}
 		}, 10 * 3);
 	}

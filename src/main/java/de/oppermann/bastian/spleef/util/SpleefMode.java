@@ -28,4 +28,18 @@ public enum SpleefMode {
 		return items;
 	}
 	
+	public String getLanguageName() {
+		switch (this) {
+			case BOWSPLEEF:
+				return Language.VALUE_MODE_BOWSPLEEF.toString();
+			case NORMAL:
+				return Language.VALUE_MODE_NORMAL.toString();
+			case SPLEEF_RUN:
+				return Language.VALUE_MODE_SPLEEF_RUN.toString();
+			case SPLEGG:
+				return Language.VALUE_MODE_SPLEGG.toString();			
+		}
+		return "unknown";
+	}
+	
 }

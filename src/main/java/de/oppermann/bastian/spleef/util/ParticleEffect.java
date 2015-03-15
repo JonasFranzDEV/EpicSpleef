@@ -997,7 +997,7 @@ public enum ParticleEffect {
 	 * @author DarkBlade12
 	 * @since 1.6
 	 */
-	public static final class ItemData extends ParticleData {
+	public static class ItemData extends ParticleData {
 		/**
 		 * Construct a new item data
 		 * 
@@ -1018,7 +1018,7 @@ public enum ParticleEffect {
 	 * @author DarkBlade12
 	 * @since 1.6
 	 */
-	public static final class BlockData extends ParticleData {
+	public static class BlockData extends ParticleData {
 		/**
 		 * Construct a new block data
 		 * 

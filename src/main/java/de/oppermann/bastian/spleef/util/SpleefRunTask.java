@@ -32,7 +32,7 @@ public class SpleefRunTask implements Runnable {
 						
 					for (Location loc : locs) {				
 						Block block = loc.getBlock().getRelative(0, -1, 0);
-						if (block.getType() != Material.AIR && block.getType() != Material.STAINED_CLAY && arena.isArenaBlock(block)) {
+						if (block.getType() != Material.AIR && !block.hasMetadata("BlockRemover") && arena.isArenaBlock(block)) {
 							new BlockRemover(block);
 						}
 					}

@@ -1,5 +1,6 @@
 package de.oppermann.bastian.spleef.arena;
 
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -15,6 +16,8 @@ public class SpleefBlock {
 	private final int X;
 	private final int Y;
 	private final int Z;
+	private final Material TYPE;
+	private final byte DATA;
 	
 	/**
 	 * Class constructor.
@@ -23,10 +26,12 @@ public class SpleefBlock {
 	 * @param y The y coordinate.
 	 * @param z The z coordinate.
 	 */
-	public SpleefBlock(int x, int y, int z) {
+	public SpleefBlock(int x, int y, int z, Material type, byte data) {
 		this.X = x;
 		this.Y = y;
 		this.Z = z;
+		this.TYPE = type;
+		this.DATA = data;
 	}
 	
 	/*
@@ -81,6 +86,20 @@ public class SpleefBlock {
 	 */
 	public int getZ() {
 		return Z;
+	}
+	
+	/**
+	 * Gets the material of the block.
+	 */
+	public Material getType() {
+		return TYPE;
+	}
+
+	/**
+	 * Gets the data of the block.
+	 */
+	public byte getData() {
+		return DATA;
 	}
 	
 }

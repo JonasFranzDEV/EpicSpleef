@@ -1,9 +1,7 @@
 package de.oppermann.bastian.spleef.listener;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -12,12 +10,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.util.BlockIterator;
-import org.bukkit.util.Vector;
 
 import com.google.common.util.concurrent.FutureCallback;
 
-import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.SpleefArena;
+import de.oppermann.bastian.spleef.util.ParticleEffect;
 import de.oppermann.bastian.spleef.util.PlayerManager;
 import de.oppermann.bastian.spleef.util.SpleefPlayer;
 
@@ -69,7 +66,18 @@ public class ProjectileHitListener implements Listener {
 			}
 		});
 		
-		
+		// animateFlyingUp(hittenBlock, oldType, oldData);		// TODO option in config
+		animateBreak(hittenBlock, oldType, oldData);
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void animateBreak(Block hittenBlock, Material oldType, byte oldData) {
+		ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(oldType, oldData), 0F, 0F, 0F, 1, 32, hittenBlock.getLocation(), 32);		
+		hittenBlock.getWorld().playEffect(hittenBlock.getLocation(), Effect.STEP_SOUND, oldType.getId());
+	}
+	
+	/*
+	private void animateFlyingUp(Block hittenBlock, Material oldType, byte oldData) {
 		@SuppressWarnings("deprecation")	// cause mojang sucks ...
 		final Entity fallingBlock = hittenBlock.getWorld().spawnFallingBlock(hittenBlock.getLocation().add(0, 0.01, 0), oldType, oldData);
 		fallingBlock.setVelocity(new Vector(0, 0.5, 0));	// let the block fly up
@@ -90,6 +98,7 @@ public class ProjectileHitListener implements Listener {
 			}
 		}, 5);
 	}
+	*/
 	
 	private Block getHittenBlock(Entity entity) {
 		World world = entity.getWorld();

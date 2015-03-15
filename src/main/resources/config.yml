@@ -26,6 +26,7 @@ auto-update:
   update: true
 # If 'unsafeUpdate' is set to false it will only check and download an update if the versions of your server and the plugins fits. (e.g. a plugin version for Minecraft 1.8.1 won't be installed on a server for 1.7.9; a plugin version for Minecraft 1.8.1 WILL be installed on a server for 1.8.0, cause this ignores the 3rd digit)
   unsafeUpdates: false
+scoreboardEnabled: true
 scoreboard:
   - '&a&lWins'
   - '%wins%'
@@ -69,8 +70,6 @@ joinsigns:
       2: '&cDISABLED'
       3: ''
       4: ''
-stats:
-  enable: true
 expertsOnly:
   stats:
     threadPoolSettings:

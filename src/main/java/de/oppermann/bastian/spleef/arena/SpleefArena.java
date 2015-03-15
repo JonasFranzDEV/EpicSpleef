@@ -10,7 +10,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -117,9 +116,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	}
 	
 	@SuppressWarnings("deprecation")	// cause mojang/bukkit/everyone sucks
-	private void fillArena(Material type, byte data) {
+	private void fillArena() {
 		for (SpleefBlock block : BLOCKS) {
-			block.toBlock(getWorld()).setTypeIdAndData(type.getId(), data, true);
+			block.toBlock(getWorld()).setTypeIdAndData(block.getType().getId(), block.getData(), true);
+			block.toBlock(getWorld()).removeMetadata("BlockRemover", SpleefMain.getInstance());
 		}
 	}
 	
@@ -131,6 +131,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 		
 		player.setFoodLevel(20);
+		player.setHealth(20D);
+		player.setMaxHealth(20D);
 		
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
@@ -149,6 +151,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
 		player.teleport(spawnLoc.toLocation(getWorld()));
+		
+		player.setFoodLevel(20);
+		player.setHealth(20D);
+		player.setMaxHealth(20D);
 		
 		if (player.getGameMode() != GameMode.SURVIVAL) {
 			player.setGameMode(GameMode.SURVIVAL);
@@ -200,7 +206,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				if (COUNTDOWN_COUNTER[0] == 0) {
 					countdownIsActive = false;					
 					if (IN_LOBBY) {
-						fillArena(Material.SNOW_BLOCK, (byte) 0); 
+						fillArena(); 
 						for (UUID uuidPlayer : PLAYERS) {
 							Player player = Bukkit.getPlayer(uuidPlayer);
 							teleportToArena(player);
@@ -252,7 +258,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	 * (Re-)sets the scoreboard.
 	 */
 	public void setScoreboard(Player player) {
-		SCOREBOARD_CONFIGURATION.setScores(player, this);
+		if (SpleefMain.getInstance().getConfigAccessor().getConfig().getBoolean("scoreboardEnabled")) {
+			SCOREBOARD_CONFIGURATION.setScores(player, this);
+		}
 	}
 	
 	/**
@@ -382,7 +390,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
 		USED_SPAWN_LOCATION.clear();
 		MEMORIES.clear();
-		fillArena(Material.SNOW_BLOCK, (byte) 0);
+		fillArena();
 		status = GameStatus.WAITING_FOR_PLAYERS;
 		playersAreInLobby = CONFIGURATION.getLobby() != null;
 		updateSigns(-1);
@@ -607,7 +615,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
 				USED_SPAWN_LOCATION.clear();
 				MEMORIES.clear();
-				fillArena(Material.SNOW_BLOCK, (byte) 0);
+				fillArena();
 				status = GameStatus.WAITING_FOR_PLAYERS;
 				playersAreInLobby = CONFIGURATION.getLobby() != null;
 				GravityModifier.resetGravity(winner.getUniqueId());
@@ -817,7 +825,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	public ArrayList<SpleefBlock> getBlocks() {
 		ArrayList<SpleefBlock> blocks = new ArrayList<>();
 		for (SpleefBlock block : BLOCKS) {
-			blocks.add(new SpleefBlock(block.getX(), block.getY(), block.getZ()));
+			blocks.add(new SpleefBlock(block.getX(), block.getY(), block.getZ(), block.getType(), block.getData()));
 		}
 		return blocks;
 	}
