@@ -6,9 +6,10 @@ import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
+import de.oppermann.bastian.spleef.api.ILobby;
 import de.oppermann.bastian.spleef.util.Validator;
 
-public class Lobby implements ISpawnlocationHolder {
+public class Lobby implements ILobby {
 	
 	private static final HashMap<String, Lobby> LOBBIES = new HashMap<>();	// stores the arenas with the unique name as key
 	
@@ -40,7 +41,7 @@ public class Lobby implements ISpawnlocationHolder {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see de.oppermann.bastian.spleef.arena.ISpawnlocationHolder#addSpawnLocation(de.oppermann.bastian.spleef.arena.SpleefSpawnLocation)
+	 * @see de.oppermann.bastian.spleef.api.ILobby#addSpawnLocation(de.oppermann.bastian.spleef.arena.SpleefSpawnLocation)
 	 */
 	@Override
 	public void addSpawnLocation(SpleefSpawnLocation spawnLocation) {
@@ -51,22 +52,25 @@ public class Lobby implements ISpawnlocationHolder {
 		}
 	}
 	
-	/**
-	 * Gets the unique name for the lobby.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ILobby#getName()
 	 */
 	public String getName() {
 		return this.NAME;
 	}
 	
-	/**
-	 * Gets the name of the lobby's world.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ILobby#getWorldName()
 	 */
 	public String getWorldName() {
 		return this.WORLD;
 	}
 	
-	/**
-	 * Gets the world of the lobby.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ILobby#getWorld()
 	 */
 	public World getWorld() {
 		return Bukkit.getWorld(WORLD);
@@ -74,15 +78,16 @@ public class Lobby implements ISpawnlocationHolder {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see de.oppermann.bastian.spleef.arena.ISpawnlocationHolder#getSpawnLocations()
+	 * @see de.oppermann.bastian.spleef.api.ILobby#getSpawnLocations()
 	 */
 	@Override
 	public ArrayList<SpleefSpawnLocation> getSpawnLocations() {
 		return new ArrayList<SpleefSpawnLocation>(SPAWNLOCATIONS);
 	}
 	
-	/**
-	 * Gets a random spawnlocation.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ILobby#getRandomSpawnLocation()
 	 */
 	public SpleefSpawnLocation getRandomSpawnLocation() {
 		if (SPAWNLOCATIONS.size() <= 0) {

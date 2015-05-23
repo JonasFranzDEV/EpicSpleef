@@ -33,22 +33,31 @@ public class PlayerInteractListener implements Listener {
 		if (arena != null) {
 			Player player = event.getPlayer();
 			if (arena.getConfiguration().instanstBlockDestroy() && event.getAction() == Action.LEFT_CLICK_BLOCK && arena.isArenaBlock(event.getClickedBlock()) && arena.getStatus() == GameStatus.ACTIVE) {
-				event.getClickedBlock().setType(Material.AIR);	// TODO option to enable instant remove
+				event.getClickedBlock().setType(Material.AIR);
 				if (arena.getConfiguration().isEnableSnowballs()) {
-					player.getInventory().addItem(new ItemStack(Material.SNOW_BALL));
-					final SpleefArena ARENA = arena;
-					SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
-						@Override
-						public void onFailure(Throwable e) {
-							e.printStackTrace();
+					int snowballs = 0;
+					for (ItemStack itemStack : player.getInventory().getContents()) {
+						if (itemStack != null && itemStack.getType() == Material.SNOW_BALL) {
+							snowballs += itemStack.getAmount();
 						}
-
-						@Override
-						public void onSuccess(SpleefPlayer stats) {
-							stats.addDestroyedBlocks(ARENA.getName(), 1);
-						}
-					});
+					}
+					if (snowballs < arena.getConfiguration().getMaxSnowballs() || arena.getConfiguration().getMaxSnowballs() < 0) {
+						player.getInventory().addItem(new ItemStack(Material.SNOW_BALL));						
+					}
 				}
+				
+				final SpleefArena ARENA = arena;
+				SpleefPlayer.getPlayer(player.getUniqueId(), new FutureCallback<SpleefPlayer>() {
+					@Override
+					public void onFailure(Throwable e) {
+						e.printStackTrace();
+					}
+
+					@Override
+					public void onSuccess(SpleefPlayer stats) {
+						stats.addDestroyedBlocks(ARENA.getName(), 1);
+					}
+				});
 			}
 			
 			// TODO check status and don't cancel it if the game is running

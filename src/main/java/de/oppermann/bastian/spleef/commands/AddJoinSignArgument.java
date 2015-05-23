@@ -36,11 +36,7 @@ public class AddJoinSignArgument extends AbstractArgument {
 	 */
 	@SuppressWarnings("deprecation")	// who cares?!?
 	@Override
-	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {
-		if (args.length > 2 || args.length < 1) {	// only 1 or 2 arguments are allowed
-			return CommandResult.ERROR;
-		}
-		
+	public CommandResult executeForPlayer(Player player, Command cmd, String[] args) {		
 		if (!player.hasPermission(getPermission())) {
 			return CommandResult.NO_PERMISSION;
 		}

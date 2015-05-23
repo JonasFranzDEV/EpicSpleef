@@ -1,0 +1,18 @@
+speedBost:
+  superSplegg: true
+  superSpleef: true
+  duration: 10
+  amplifier: 2
+jumpBost:
+  superSplegg: true
+  superSpleef: true
+  duration: 10
+  amplifier: 2
+invisibility:
+  superSplegg: true
+  superSpleef: true
+  duration: 3
+grenade:
+  superSplegg: true
+  superSpleef: true
+  radius: 4

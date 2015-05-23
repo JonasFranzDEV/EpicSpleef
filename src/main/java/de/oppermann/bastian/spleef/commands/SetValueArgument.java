@@ -121,6 +121,20 @@ public class SetValueArgument extends AbstractArgument {
 					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
 					return CommandResult.SUCCESS;
 				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_SUPER_SPLEEF.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.SUPER_SPLEEF);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_SUPER_SPLEEF.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
+				if (args[3].equalsIgnoreCase(Language.VALUE_MODE_SUPER_SPLEGG.toString())) {
+					arena.getConfiguration().setMode(SpleefMode.SUPER_SPLEGG);
+					player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_MODE.toString()).replace("%value%", Language.VALUE_MODE_SUPER_SPLEGG.toString()));
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("mode", arena.getConfiguration().getMode().name().toLowerCase());
+					SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+					return CommandResult.SUCCESS;
+				}
 				player.sendMessage(Language.UNKNOWN_MODE.toString());
 				return CommandResult.SUCCESS;
 			}
@@ -466,12 +480,15 @@ public class SetValueArgument extends AbstractArgument {
 				list.add(Language.VALUE_MODE_BOWSPLEEF.toString());
 				list.add(Language.VALUE_MODE_SPLEGG.toString());
 				list.add(Language.VALUE_MODE_SPLEEF_RUN.toString());
+				//list.add(Language.VALUE_MODE_SUPER_SPLEEF.toString()); // TODO enable super gamemodes
+				//list.add(Language.VALUE_MODE_SUPER_SPLEGG.toString()); // TODO enable super gamemodes
 			}
 			if (args[2].equalsIgnoreCase(Language.FLAG_VEHICLE.toString())) {
 				try {
 					list.add(EntityType.RABBIT.name().toLowerCase());
 				} catch (Exception e) {
 					// older versions of minecraft don't have rabbits :(
+					// A life without rabbits is not livable!
 				}
 				list.add(EntityType.VILLAGER.name().toLowerCase());
 				list.add(EntityType.PIG.name().toLowerCase());

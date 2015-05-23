@@ -47,12 +47,16 @@ import de.oppermann.bastian.spleef.listener.PlayerDropItemListener;
 import de.oppermann.bastian.spleef.listener.PlayerInteractListener;
 import de.oppermann.bastian.spleef.listener.PlayerJoinListener;
 import de.oppermann.bastian.spleef.listener.PlayerMoveListener;
+import de.oppermann.bastian.spleef.listener.PlayerPickupItemListener;
 import de.oppermann.bastian.spleef.listener.PlayerQuitListener;
 import de.oppermann.bastian.spleef.listener.ProjectileHitListener;
+import de.oppermann.bastian.spleef.listener.ProjectileLaunchListener;
+import de.oppermann.bastian.spleef.listener.ServerListPingListener;
 import de.oppermann.bastian.spleef.lobbycommands.AddLobbySpawnlocArgument;
 import de.oppermann.bastian.spleef.lobbycommands.CreateLobbyArgument;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.storage.StorageManager;
+import de.oppermann.bastian.spleef.util.BungeecordUtil;
 import de.oppermann.bastian.spleef.util.EpicSpleefVersion;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.GravityModifier;
@@ -66,6 +70,7 @@ import de.oppermann.bastian.spleef.util.SpectateType;
 import de.oppermann.bastian.spleef.util.SpleefArenaConfiguration;
 import de.oppermann.bastian.spleef.util.SpleefMode;
 import de.oppermann.bastian.spleef.util.SpleefRunTask;
+import de.oppermann.bastian.spleef.util.SuperModesTask;
 import de.oppermann.bastian.spleef.util.UpdateChecker;
 import de.oppermann.bastian.spleef.util.Validator;
 import de.oppermann.bastian.spleef.util.command.SpleefCommand;
@@ -90,6 +95,7 @@ public class SpleefMain extends JavaPlugin {
 	
 	private ConfigAccessor languageConfigAccessor;
 	private ConfigAccessor particleConfigAccessor;
+	private ConfigAccessor bungeeConfigAccessor;
 
 	/*
 	 * (non-Javadoc)
@@ -113,11 +119,14 @@ public class SpleefMain extends JavaPlugin {
 		loadConfig(); // load the config
 		loadLanguageConfig(); // load the language config
 		loadParticleConfig(); // load the particle config
+		//loadBungeeConfig(); // load the bungeecord config // TODO enable bungeecord support
 		regListener(); // register listener
 		regCommands(); // register commands
 		loadLobbies(); // load the lobbies
 		loadArenas(); // load the arenas
 		loadStats(); // load the stats
+		
+		//BungeecordUtil.init(); // init bungeecord utils // TODO enable bungeecord support
 		
 		if (!PluginChecker.vaultIsLoaded()) {
 			log(Level.INFO, "Could not find Vault. Money rewards won't work. :(");
@@ -182,6 +191,7 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getScheduler().runTaskTimer(this, new PlayerDismountCheckTask(), 1, 1);
 		Bukkit.getScheduler().runTaskTimer(this, new ParticleCreatorTask(), 1, 1);
 		Bukkit.getScheduler().runTaskTimer(this, new SpleefRunTask(), 4, 4);
+		Bukkit.getScheduler().runTaskTimer(this, new SuperModesTask(), 20, 20);
 	}
 	
 	private void metrics() {
@@ -212,6 +222,11 @@ public class SpleefMain extends JavaPlugin {
 		particleConfigAccessor.saveDefaultConfig();
 	}
 	
+	private void loadBungeeConfig() {
+		bungeeConfigAccessor = new ConfigAccessor(this, "bungeecord.yml", getDataFolder());
+		bungeeConfigAccessor.saveDefaultConfig();
+	}
+	
 	private void regListener() {
 		Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), this);
 		Bukkit.getPluginManager().registerEvents(new EntityDamageListener(), this);
@@ -224,8 +239,11 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerInteractListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
 		Bukkit.getPluginManager().registerEvents(new ProjectileHitListener(), this);
+		Bukkit.getPluginManager().registerEvents(new ProjectileLaunchListener(), this);
+		Bukkit.getPluginManager().registerEvents(new ServerListPingListener(), this);
 	}
 	
 	private void regCommands() {
@@ -508,6 +526,13 @@ public class SpleefMain extends JavaPlugin {
 	 */
 	public ConfigAccessor getParticleConfigAccessor() {
 		return particleConfigAccessor;
+	}
+	
+	/**
+	 * Gets the {@link ConfigAccessor} for bungeecord.
+	 */
+	public ConfigAccessor getBungeeConfigAccessor() {
+		return bungeeConfigAccessor;
 	}
 	
 	/**

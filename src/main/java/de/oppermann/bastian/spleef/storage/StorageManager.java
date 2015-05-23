@@ -56,7 +56,7 @@ public class StorageManager {
 				try {
 					if (sqlLite) {						
 						connector = new SQLiteConnector(SpleefMain.getInstance(), "database.db");
-						SpleefMain.getInstance().log(Level.SEVERE, "Database created!");
+						SpleefMain.getInstance().log(Level.INFO, "Database created!");
 						Bukkit.getScheduler().runTask(SpleefMain.getInstance(), new Runnable() {							
 							@Override
 							public void run() {

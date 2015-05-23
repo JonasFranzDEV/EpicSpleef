@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.util.concurrent.FutureCallback;
 
 import de.oppermann.bastian.spleef.SpleefMain;
+import de.oppermann.bastian.spleef.api.ISpleefArena;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
@@ -50,7 +51,7 @@ import de.oppermann.bastian.spleef.util.nms.WrappedEnumTitleAction;
  * 
  * @author Bastian Oppermann
  */
-public abstract class SpleefArena implements ISpawnlocationHolder {
+public abstract class SpleefArena implements ISpleefArena {
 
 	private static final HashMap<String, SpleefArena> ARENAS = new HashMap<>();	// stores the arenas with the unique name as key	
 	
@@ -77,6 +78,8 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	private boolean countdownIsActive = false;
 	private int countdownId = -1;
 	private boolean playersAreInLobby = false;
+	
+	private String[] signText = new String[4];
 	
 	private final int[] COUNTDOWN_COUNTER = new int[] { 0 };
 	
@@ -240,14 +243,18 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		countdownId = ID[0];
 	}
 	
-	private void broadcastMessage(String message) {
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#broadcastMessage(java.lang.String)
+	 */
+	public void broadcastMessage(String message) {
 		for (UUID uuidPlayer : PLAYERS) {
 			Player player = Bukkit.getPlayer(uuidPlayer);
 			player.sendMessage(message);
 		}
 	}
 	
-	private void broadcastTitle(String message, WrappedEnumTitleAction type) {
+	public void broadcastTitle(String message, WrappedEnumTitleAction type) {
 		for (UUID uuidPlayer : PLAYERS) {
 			Player player = Bukkit.getPlayer(uuidPlayer);
 			TitleManager.sendTitle(player, message, type);
@@ -275,10 +282,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 	}
 	
-	/**
-	 * Tries to add player to the arena. May throw an exception if this is not possible.
-	 * 
-	 * @param player The player to add.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#join(org.bukkit.entity.Player)
 	 */
 	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException {
 		Validator.validateNotNull(player, "player");
@@ -343,8 +349,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		updateSigns(-1);
 	}
 	
-	/**
-	 * Stops the game immediately.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#stopImmediately(de.oppermann.bastian.spleef.util.GameStopReason)
 	 */
 	public void stopImmediately(GameStopReason reason) {
 		Validator.validateNotNull(reason, "reason");
@@ -396,15 +403,17 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		updateSigns(-1);
 	}
 	
-	/**
-	 * Removes a player from the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#removePlayer(org.bukkit.entity.Player)
 	 */
 	public void removePlayer(Player player) {
 		removePlayer(player, false);
 	}
 	
-	/**
-	 * Removes a player from the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#removePlayer(org.bukkit.entity.Player, boolean)
 	 */
 	public void removePlayer(Player player, boolean spectate) {
 		Validator.validateNotNull(player, "player");
@@ -636,8 +645,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 	}
 	
-	/**
-	 * Checks whether a block belongs to the arena or not.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#isArenaBlock(org.bukkit.block.Block)
 	 */
 	public boolean isArenaBlock(Block block) {
 		for (SpleefBlock blocks : BLOCKS) {
@@ -654,10 +664,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		return false;
 	}
 	
-	/**
-	 * Adds a {@link SpleefBlock}.
-	 * 
-	 * @param block The block to add.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#addSpleefBlock(de.oppermann.bastian.spleef.arena.SpleefBlock)
 	 */
 	public void addSpleefBlock(SpleefBlock block) {
 		Validator.validateNotNull(block, "block");	// validate the parameter
@@ -669,8 +678,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		}
 	}
 	
-	/**
-	 * Adds a join sign.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#addJoinSign(org.bukkit.block.Block)
 	 */
 	public boolean addJoinSign(Block block) {
 		if (!(block.getState() instanceof Sign)) {
@@ -688,8 +698,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		return true;
 	}
 	
-	/**
-	 * Checks if a block is a join sign.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#isJoinSign(org.bukkit.block.Block)
 	 */
 	public boolean isJoinSign(Block block) {
 		for (SimpleBlock signBlock : JOIN_SIGNS) {
@@ -698,6 +709,10 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 			}
 		}
 		return false;
+	}
+	
+	public String[] getSignText() {
+		return signText;
 	}
 	
 	private void updateSigns(int countdown) {
@@ -732,21 +747,21 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 				if (lines[i] == null) {
 					continue;
 				}
-				String line = lines[i];
-				line = ChatColor.translateAlternateColorCodes('&', line);
-				line = line.replace("%arena%", this.getName());
-				line = line.replace("%players%", Integer.toString(PLAYERS.size()));
-				line = line.replace("%maxPlayers%", Integer.toString(SPAWNLOCATIONS.size()));
-				line = line.replace("%countdown%", Integer.toString(countdown));
-				sign.setLine(i, line.length() <= 16 ? line : line.substring(0, 16));
-			}	
+				lines[i] = ChatColor.translateAlternateColorCodes('&', lines[i]);
+				lines[i] = lines[i].replace("%arena%", this.getName());
+				lines[i] = lines[i].replace("%players%", Integer.toString(PLAYERS.size()));
+				lines[i] = lines[i].replace("%maxPlayers%", Integer.toString(SPAWNLOCATIONS.size()));
+				lines[i] = lines[i].replace("%countdown%", Integer.toString(countdown));
+				sign.setLine(i, lines[i].length() <= 16 ? lines[i] : lines[i].substring(0, 16));
+			}
 			sign.update();
+			signText = lines;
 		}
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see de.oppermann.bastian.spleef.arena.ISpawnlocationHolder#addSpawnLocation(de.oppermann.bastian.spleef.arena.SpleefSpawnLocation)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#addSpawnLocation(de.oppermann.bastian.spleef.arena.SpleefSpawnLocation)
 	 */
 	@Override
 	public void addSpawnLocation(SpleefSpawnLocation spawnLocation) {
@@ -757,50 +772,57 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	
 	/* Getter */
 	
-	/**
-	 * Gets the y-coordinate of the lowest block.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getLowestBlock()
 	 */
 	public int getLowestBlock() {
 		return this.lowestBlock;
 	}
 	
-	/**
-	 * Gets the unique name for the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getName()
 	 */
 	public String getName() {
 		return this.NAME;
 	}
 	
-	/**
-	 * Gets the name of the arena's world.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getWorldName()
 	 */
 	public String getWorldName() {
 		return this.WORLD;
 	}
 	
-	/**
-	 * Gets the world of the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getWorld()
 	 */
 	public World getWorld() {
 		return Bukkit.getWorld(WORLD);
 	}	
 	
-	/**
-	 * Gets the configuration of the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getConfiguration()
 	 */
 	public SpleefArenaConfiguration getConfiguration() {
 		return this.CONFIGURATION;
 	}
 	
-	/**
-	 * Gets the players in the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getPlayers()
 	 */
 	public ArrayList<UUID> getPlayers() {
 		return new ArrayList<UUID>(PLAYERS);
 	}
 	
-	/**
-	 * Gets the spectators in the arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getSpectators()
 	 */
 	public ArrayList<UUID> getSpectators() {
 		return new ArrayList<UUID>(SPECTATORS);
@@ -808,7 +830,7 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see de.oppermann.bastian.spleef.arena.ISpawnlocationHolder#getSpawnLocations()
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getSpawnLocations()
 	 */
 	@Override
 	public ArrayList<SpleefSpawnLocation> getSpawnLocations() {
@@ -819,8 +841,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		return locations;
 	}
 	
-	/**
-	 * Gets the blocks of arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getBlocks()
 	 */
 	public ArrayList<SpleefBlock> getBlocks() {
 		ArrayList<SpleefBlock> blocks = new ArrayList<>();
@@ -830,8 +853,9 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		return blocks;
 	}
 	
-	/**
-	 * Gets the join signs of arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getJoinSigns()
 	 */
 	public ArrayList<SimpleBlock> getJoinSigns() {
 		ArrayList<SimpleBlock> blocks = new ArrayList<>();
@@ -841,31 +865,33 @@ public abstract class SpleefArena implements ISpawnlocationHolder {
 		return blocks;
 	}
 	
-	/**
-	 * Gets the status of the game/arena.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#getStatus()
 	 */
 	public GameStatus getStatus() {
 		return status;
 	}
 	
-	/**
-	 * Checks if the countdown is active. (in lobby OR in arena => check #stillInLobby() )
+	/*
+	 * /(non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#countdownIsActive()
 	 */
 	public boolean countdownIsActive() {
 		return countdownIsActive;
 	}
 	
-	/**
-	 * Checks if the players are still in the lobby.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#playersAreInLobby()
 	 */
 	public boolean playersAreInLobby() {
 		return playersAreInLobby;
 	}
 	
-	/**
-	 * Deletes the arena.
-	 * 
-	 * @param deleteStats Wheter the stats should be deleted or not.
+	/*
+	 * (non-Javadoc)
+	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#delete(boolean)
 	 */
 	public void delete(boolean deleteStats) {	
 		stopImmediately(GameStopReason.EDIT_ARENA);

@@ -17,7 +17,7 @@
 #####################################################################
 #####################################################################
 mainSettings:
-  languagefile: lang.yml
+  languagefile: language.yml
   enableScoreboard: true
 auto-update:
 # Set 'check' to false to completely disable auto-updating. (You can still update the plugin with ingame commands)

@@ -91,7 +91,7 @@ public enum Language {
 	
 	SUCCESSFULLY_CREATED_LOBBY(ChatColor.GREEN + "Lobby " + ChatColor.GOLD + "%lobby% " + ChatColor.GREEN + " created."
 			+ "%n" + ChatColor.GREEN + ChatColor.UNDERLINE +  "Things you should do now:"
-			+ "%n" + ChatColor.GREEN + "1. " + ChatColor.GOLD + "/spleef addspawnloc -lobby" + ChatColor.GREEN + " to add spawnlocations."
+			+ "%n" + ChatColor.GREEN + "1. " + ChatColor.GOLD + "/spleeflobby addspawnloc %lobby%" + ChatColor.GREEN + " to add spawnlocations."
 	),
 	
 	SUCCESSFULLY_DELETED_ARENA(ChatColor.GREEN + "Arena " + ChatColor.GOLD + "%arena% " + ChatColor.GREEN + " deleted."),
@@ -189,6 +189,8 @@ public enum Language {
 	VALUE_MODE_BOWSPLEEF("bowspleef"),
 	VALUE_MODE_SPLEGG("splegg"),
 	VALUE_MODE_SPLEEF_RUN("spleefRun"),
+	VALUE_MODE_SUPER_SPLEEF("superSpleef"),
+	VALUE_MODE_SUPER_SPLEGG("superSplegg"),
 	
 	// items
 	HIDE_PLAYERS_ITEM(ChatColor.LIGHT_PURPLE + "Hide players"),

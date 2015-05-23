@@ -1,15 +1,21 @@
 package de.oppermann.bastian.spleef.listener;
 
+import java.util.ArrayList;
+
 import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
 
 import com.google.common.util.concurrent.FutureCallback;
 
@@ -24,8 +30,10 @@ public class ProjectileHitListener implements Listener {
 	public void onProjectileHit(ProjectileHitEvent event) {		
 		Player shooter = null;
 		
-		if (event.getEntity().getShooter() instanceof Player) {
-			shooter = (Player) event.getEntity().getShooter();
+		Projectile projectile = event.getEntity();
+		
+		if (projectile.getShooter() instanceof Player) {
+			shooter = (Player) projectile.getShooter();
 		}	
 		
 		if (shooter == null) {
@@ -38,19 +46,30 @@ public class ProjectileHitListener implements Listener {
 			return;
 		}
 		
-		Block hittenBlock = getHittenBlock(event.getEntity());
-		
-		if (!arena.isArenaBlock(hittenBlock)) {
+		if (projectile.hasMetadata("EpicSpleef:Grenade")) {
+			for (Block block : getSphere(getHittenBlock(projectile).getLocation(), 3)) {
+				remove(arena, block, shooter);
+			}
+			event.getEntity().remove();
 			return;
 		}
 		
-		event.getEntity().remove();	// remove the entity		
+		Block hittenBlock = getHittenBlock(projectile);
+		remove(arena, hittenBlock, shooter);
+		event.getEntity().remove();	// remove the entity	
+	}
+	
+	private void remove(SpleefArena arena, Block block, Player shooter) {
+		if (!arena.isArenaBlock(block)) {
+			return;
+		}
+			
 		
-		Material oldType = hittenBlock.getType();
+		Material oldType = block.getType();
 		@SuppressWarnings("deprecation")	// cause mojang sucks ...
-		byte oldData = hittenBlock.getData();		
+		byte oldData = block.getData();		
 		
-		hittenBlock.setType(Material.AIR);	// sets the block to air
+		block.setType(Material.AIR);	// sets the block to air
 		
 		
 		final SpleefArena ARENA = arena;
@@ -67,7 +86,7 @@ public class ProjectileHitListener implements Listener {
 		});
 		
 		// animateFlyingUp(hittenBlock, oldType, oldData);		// TODO option in config
-		animateBreak(hittenBlock, oldType, oldData);
+		animateBreak(block, oldType, oldData);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -99,6 +118,37 @@ public class ProjectileHitListener implements Listener {
 		}, 5);
 	}
 	*/
+
+	private static ArrayList<Block> getSphere(Location center, int radius) {
+		Vector vec = new BlockVector(center.getBlockX(), center.getY(), center.getZ());
+		int x2 = center.getBlockX();
+		int y2 = center.getBlockY();
+		int z2 = center.getBlockZ();
+		// world
+		World world = center.getWorld();
+	        
+		ArrayList<Block> blocks = new ArrayList<>();
+		
+		// iterate through all blocks
+		for (int x = -radius; x <= radius; x++) {
+			for (int y = -radius; y <= radius; y++) {
+				for (int z = -radius; z <= radius; z++) {
+					if (y+y2 < 0 || y+y2 > 256)
+						continue;
+					
+					Vector position = vec.clone().add(new Vector(x, y, z));
+					
+					// check if is cricle
+					if (vec.distanceSquared(position) <= (radius + 0.5) * (radius + 0.5)) {
+						Block block = world.getBlockAt(x+x2, y+y2, z+z2);
+						blocks.add(block);
+					}
+				}
+			}
+		}
+	        
+		return blocks;
+	}
 	
 	private Block getHittenBlock(Entity entity) {
 		World world = entity.getWorld();

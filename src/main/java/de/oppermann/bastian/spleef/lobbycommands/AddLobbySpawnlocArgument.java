@@ -97,7 +97,7 @@ public class AddLobbySpawnlocArgument extends AbstractArgument {
 			list.add(Language.COMMAND_ADD_SPAWNLOCATION.toString());
 		}
 		if (args.length == 2) {
-			list.addAll(Sets.newHashSet(SpleefArena.getArenaNames()));
+			list.addAll(Sets.newHashSet(Lobby.getLobbyNames()));
 		}
 		return list;
 	}
