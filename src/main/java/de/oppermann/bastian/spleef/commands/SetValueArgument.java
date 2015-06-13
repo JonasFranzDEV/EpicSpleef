@@ -359,6 +359,42 @@ public class SetValueArgument extends AbstractArgument {
 				return CommandResult.SUCCESS;
 			}
 			
+			if (args[2].equalsIgnoreCase(Language.FLAG_ARENA_COUNTDOWN.toString())) {
+				int arenaCountdown;
+				try {
+					arenaCountdown = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}
+				
+				arenaCountdown = arenaCountdown < 5 ? 5 : arenaCountdown;	// must be at least 5
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_ARENA_COUNTDOWN.toString()).replace("%value%", String.valueOf(arenaCountdown)));
+				
+				arena.getConfiguration().setArenaCountdown(arenaCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("arenaCountdown", arenaCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_LOBBY_COUNTDOWN.toString())) {
+				int lobbyCountdown;
+				try {
+					lobbyCountdown = Integer.valueOf(args[3]);
+				} catch (NumberFormatException e) {
+					player.sendMessage(Language.VALUE_MUST_BE_A_NUMBER.toString());
+					return CommandResult.SUCCESS;
+				}
+				
+				lobbyCountdown = lobbyCountdown < 5 ? 5 : lobbyCountdown;	// must be at least 5
+				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_LOBBY_COUNTDOWN.toString()).replace("%value%", String.valueOf(lobbyCountdown)));
+				
+				arena.getConfiguration().setLobbyCountdown(lobbyCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).getConfig().set("lobbyCountdown", lobbyCountdown);
+				SpleefMain.getInstance().getArenaAccessor(arena.getName()).saveConfig();
+				return CommandResult.SUCCESS;
+			}
+			
 			player.sendMessage(Language.UNKNOWN_FLAG.toString().replace("%flag%", args[2]));
 			return CommandResult.SUCCESS;
 		}
@@ -455,6 +491,8 @@ public class SetValueArgument extends AbstractArgument {
 			list.add(Language.FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN.toString());
 			list.add(Language.FLAG_SPECTATE_TYPE.toString());
 			list.add(Language.FLAG_SPECTATE_LOCATION.toString());
+			list.add(Language.FLAG_ARENA_COUNTDOWN.toString());
+			list.add(Language.FLAG_LOBBY_COUNTDOWN.toString());
 		}
 		if (args.length == 4) {
 			if (args[2].equalsIgnoreCase(Language.FLAG_ENABLED.toString())
@@ -509,6 +547,18 @@ public class SetValueArgument extends AbstractArgument {
 				list.add("150");
 				list.add("200");
 				list.add("500");				
+			}
+			
+			if (args[2].equalsIgnoreCase(Language.FLAG_ARENA_COUNTDOWN.toString()) || args[2].equalsIgnoreCase(Language.FLAG_LOBBY_COUNTDOWN.toString())) {
+				list.add("10");
+				list.add("15");
+				list.add("20");
+				list.add("30");
+				list.add("45");
+				list.add("60");
+				list.add("100");
+				list.add("120");
+				list.add("250");
 			}
 			
 			if (args[2].equalsIgnoreCase(Language.FLAG_GRAVITY.toString())) {

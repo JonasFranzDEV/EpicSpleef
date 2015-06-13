@@ -18,6 +18,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
+import de.oppermann.bastian.spleef.exceptions.TooLateToJoinException;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.Language;
 import de.oppermann.bastian.spleef.util.PlayerManager;
@@ -110,6 +111,8 @@ public class PlayerInteractListener implements Listener {
 								player.sendMessage(Language.CAN_NOT_JOIN_ARENA_DISABLED.toString().replace("%arena%", arenas.getName()));
 							} catch (SpleefArenaMisconfiguredException e) {
 								player.sendMessage(Language.CAN_NOT_JOIN_ARENA_MISCONFIGURED.toString().replace("%arena%", arenas.getName()));
+							} catch (TooLateToJoinException e) {
+								player.sendMessage(Language.CAN_NOT_JOIN_TOO_LATE.toString().replace("%arena%", arenas.getName()));
 							}
 						}
 					}

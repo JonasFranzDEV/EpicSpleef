@@ -26,6 +26,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
+import de.oppermann.bastian.spleef.exceptions.TooLateToJoinException;
 import de.oppermann.bastian.spleef.hooks.VaultHook;
 import de.oppermann.bastian.spleef.storage.StorageManager;
 import de.oppermann.bastian.spleef.util.GameStatus;
@@ -212,11 +213,12 @@ public abstract class SpleefArena implements ISpleefArena {
 						fillArena(); 
 						for (UUID uuidPlayer : PLAYERS) {
 							Player player = Bukkit.getPlayer(uuidPlayer);
-							teleportToArena(player);
+							teleportToArena(player);							
 						}
+						status = GameStatus.COUNTDOWN_IN_ARENA_AFTER_LOBBY;
 						startCountdown(false, getConfiguration().getArenaCountdown());
 					} else {
-						status = GameStatus.ACTIVE;						
+						status = GameStatus.ACTIVE;
 					}
 					
 					Bukkit.getScheduler().cancelTask(ID[0]);
@@ -286,7 +288,7 @@ public abstract class SpleefArena implements ISpleefArena {
 	 * (non-Javadoc)
 	 * @see de.oppermann.bastian.spleef.api.ISpleefArena#join(org.bukkit.entity.Player)
 	 */
-	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException {
+	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException, TooLateToJoinException {
 		Validator.validateNotNull(player, "player");
 		
 		if (PLAYERS.contains(player.getUniqueId())) {	// a player can not join a arena twice. (YOU DONT SAY?!?)
@@ -315,6 +317,10 @@ public abstract class SpleefArena implements ISpleefArena {
 		
 		if (getConfiguration().getRequiredPlayersToStartCountdown() < 2) {
 			throw new SpleefArenaMisconfiguredException("The required players to start can't be less than 2");
+		}
+		
+		if (countdownIsActive() && COUNTDOWN_COUNTER[0] < 5) {
+			throw new TooLateToJoinException("Cann't join in the last 5 seconds");
 		}
 		
 		MEMORIES.put(player.getUniqueId(), new PlayerMemory(player));
@@ -724,7 +730,7 @@ public abstract class SpleefArena implements ISpleefArena {
 			String[] lines = new String[4];
 			String type = "none";
 			
-			if (getStatus() == GameStatus.ACTIVE) {				
+			if (getStatus() == GameStatus.ACTIVE || getStatus() == GameStatus.COUNTDOWN_IN_ARENA_AFTER_LOBBY) {				
 				type = "inProgress";				
 			}
 			if (getStatus() == GameStatus.WAITING_FOR_PLAYERS) {

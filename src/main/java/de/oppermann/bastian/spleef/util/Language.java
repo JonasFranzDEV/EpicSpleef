@@ -74,6 +74,7 @@ public enum Language {
 	CAN_NOT_JOIN_GAME_ACTIVE(ChatColor.RED + "The game is already running!"),
 	CAN_NOT_JOIN_NO_PERMISSION(ChatColor.RED + "You are not allowed to join %arena%!"),
 	CAN_NOT_JOIN_ARENA_MISCONFIGURED(ChatColor.RED + "The arena is misconfigured!"),
+	CAN_NOT_JOIN_TOO_LATE(ChatColor.RED + "Sorry, but you can't join in the last 5 seconds!"),
 	
 	NO_COMMANDS_IN_ARENA(ChatColor.RED + "You can't execute this command while you're in an arena!"),
 
@@ -180,6 +181,8 @@ public enum Language {
 	FLAG_REQUIRED_PLAYERS_TO_START_COUNTDOWN("requiredPlayersToStartCountdown"),
 	FLAG_SPECTATE_TYPE("spectateType"),
 	FLAG_SPECTATE_LOCATION("spectateLocation"),
+	FLAG_ARENA_COUNTDOWN("arenaCountdown"),
+	FLAG_LOBBY_COUNTDOWN("lobbyCountdown"),
 	
 	// values
 	VALUE_TRUE("true"),

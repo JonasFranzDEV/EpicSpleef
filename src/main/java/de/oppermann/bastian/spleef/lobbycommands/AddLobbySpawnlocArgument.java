@@ -12,7 +12,6 @@ import com.google.common.collect.Sets;
 
 import de.oppermann.bastian.spleef.SpleefMain;
 import de.oppermann.bastian.spleef.arena.Lobby;
-import de.oppermann.bastian.spleef.arena.SpleefArena;
 import de.oppermann.bastian.spleef.arena.SpleefSpawnLocation;
 import de.oppermann.bastian.spleef.storage.ConfigAccessor;
 import de.oppermann.bastian.spleef.util.Language;

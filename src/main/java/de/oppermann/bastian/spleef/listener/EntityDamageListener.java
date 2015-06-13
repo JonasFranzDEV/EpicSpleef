@@ -12,7 +12,7 @@ public class EntityDamageListener implements Listener {
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		SpleefArena arena = PlayerManager.getArena(event.getEntity().getUniqueId());
-		if (arena != null) { // is the entity is a player who is in an arena
+		if (arena != null) { // if the entity is a player who is in an arena
 			if (arena.playersAreInLobby()) {
 				event.setCancelled(true);
 				return;
@@ -21,7 +21,7 @@ public class EntityDamageListener implements Listener {
 				event.setCancelled(true);
 				return;
 			}
-			event.setDamage(0D);	// hurt but not damage 
+			event.setDamage(0D); // hurt but not damage 
 		} else { // something that's not in an arena - maybe even a player :o
 			if (event.getEntity().getPassenger() != null) {	// if the entity has a passenger
 				arena = PlayerManager.getArena(event.getEntity().getPassenger().getUniqueId());

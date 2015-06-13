@@ -243,7 +243,7 @@ public class SpleefMain extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), this);
 		Bukkit.getPluginManager().registerEvents(new ProjectileHitListener(), this);
 		Bukkit.getPluginManager().registerEvents(new ProjectileLaunchListener(), this);
-		Bukkit.getPluginManager().registerEvents(new ServerListPingListener(), this);
+		// Bukkit.getPluginManager().registerEvents(new ServerListPingListener(), this);
 	}
 	
 	private void regCommands() {
@@ -350,6 +350,8 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setPointsParticipationReward(arenaConfig.getConfig().getInt("reward.points.participation"));
 				configuration.setMoneyWinningReward(arenaConfig.getConfig().getInt("reward.money.winning"));
 				configuration.setMoneyParticipationReward(arenaConfig.getConfig().getInt("reward.money.participation"));
+				configuration.setArenaCountdown(arenaConfig.getConfig().getInt("arenaCountdown"));
+				configuration.setLobbyCountdown(arenaConfig.getConfig().getInt("lobbyCountdown"));
 				try {
 					configuration.setVehicle(arenaConfig.getConfig().getString("vehicle") == null ? null : EntityType.valueOf(arenaConfig.getConfig().getString("vehicle").toUpperCase()));
 				} catch (IllegalArgumentException e) {

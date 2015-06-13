@@ -13,6 +13,7 @@ import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsDisabledException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaIsFullException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaMisconfiguredException;
 import de.oppermann.bastian.spleef.exceptions.SpleefArenaNotWaitingForPlayersException;
+import de.oppermann.bastian.spleef.exceptions.TooLateToJoinException;
 import de.oppermann.bastian.spleef.util.GameStatus;
 import de.oppermann.bastian.spleef.util.GameStopReason;
 import de.oppermann.bastian.spleef.util.SimpleBlock;
@@ -38,8 +39,9 @@ public interface ISpleefArena {
 	 * @throws SpleefArenaIsFullException if the arena is full.
 	 * @throws SpleefArenaIsDisabledException if the arena is disabled.
 	 * @throws SpleefArenaMisconfiguredException if the configuration of the arena is wrong.
+	 * @throws TooLateToJoinException  If it's too late to join.
 	 */
-	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException;
+	public void join(Player player) throws SpleefArenaNotWaitingForPlayersException, SpleefArenaIsFullException, SpleefArenaIsDisabledException, SpleefArenaMisconfiguredException, TooLateToJoinException;
 	
 	/**
 	 * Stops the game immediately (e.g. because of a reload)
