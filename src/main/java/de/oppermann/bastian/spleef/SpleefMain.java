@@ -345,13 +345,13 @@ public class SpleefMain extends JavaPlugin {
 				configuration.setMinPlayers(arenaConfig.getConfig().getInt("minPlayers", 2));
 				configuration.setRequiredPlayersToStartountdown(arenaConfig.getConfig().getInt("requiredPlayersToStartCountdown", 2));
 				configuration.setFreezePlayers(arenaConfig.getConfig().getBoolean("freezePlayers", true));
-				configuration.setCustomInventory(arenaConfig.getConfig().getBoolean("customInventory.enabled"));
+				configuration.setCustomInventory(arenaConfig.getConfig().getBoolean("customInventory.enabled", false));
 				configuration.setPointsWinningReward(arenaConfig.getConfig().getInt("reward.points.winning"));
 				configuration.setPointsParticipationReward(arenaConfig.getConfig().getInt("reward.points.participation"));
 				configuration.setMoneyWinningReward(arenaConfig.getConfig().getInt("reward.money.winning"));
 				configuration.setMoneyParticipationReward(arenaConfig.getConfig().getInt("reward.money.participation"));
-				configuration.setArenaCountdown(arenaConfig.getConfig().getInt("arenaCountdown"));
-				configuration.setLobbyCountdown(arenaConfig.getConfig().getInt("lobbyCountdown"));
+				configuration.setArenaCountdown(arenaConfig.getConfig().getInt("arenaCountdown", 10));
+				configuration.setLobbyCountdown(arenaConfig.getConfig().getInt("lobbyCountdown", 60));
 				try {
 					configuration.setVehicle(arenaConfig.getConfig().getString("vehicle") == null ? null : EntityType.valueOf(arenaConfig.getConfig().getString("vehicle").toUpperCase()));
 				} catch (IllegalArgumentException e) {
@@ -377,6 +377,7 @@ public class SpleefMain extends JavaPlugin {
 				for (int i = 0; i < customInventoryContents.length; i++) {
 					customInventoryContents[i] = arenaConfig.getConfig().getItemStack("customInventory.items." + i);	// could be null but never mind :)
 				}
+				configuration.setCustomInventoryContents(customInventoryContents);
 				
 				// create the arena
 				SpleefArena arena = new StandardSpleefArena(name, world, configuration, defaultScoreboardConfiguration);

@@ -177,6 +177,8 @@ public class StorageManager {
 			accessor.getConfig().set("reward.points.participation", arena.getConfiguration().getPointsParticipationReward());
 			accessor.getConfig().set("reward.money.winning", arena.getConfiguration().getMoneyWinningReward());
 			accessor.getConfig().set("reward.money.participation", arena.getConfiguration().getMoneyParticipationReward());
+			accessor.getConfig().set("arenaCountdown", arena.getConfiguration().getArenaCountdown());
+			accessor.getConfig().set("lobbyCountdown", arena.getConfiguration().getLobbyCountdown());
 			
 			int i = 1;
 			for (SpleefSpawnLocation spawnLocation : arena.getSpawnLocations()) {

@@ -368,7 +368,7 @@ public class SetValueArgument extends AbstractArgument {
 					return CommandResult.SUCCESS;
 				}
 				
-				arenaCountdown = arenaCountdown < 5 ? 5 : arenaCountdown;	// must be at least 5
+				arenaCountdown = arenaCountdown < 0 ? 0 : arenaCountdown;	// must be at least 0
 				player.sendMessage(Language.SUCCESSFULLY_SET_VALUE.toString().replace("%flag%", Language.FLAG_ARENA_COUNTDOWN.toString()).replace("%value%", String.valueOf(arenaCountdown)));
 				
 				arena.getConfiguration().setArenaCountdown(arenaCountdown);

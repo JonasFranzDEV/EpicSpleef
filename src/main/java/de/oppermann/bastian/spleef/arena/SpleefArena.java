@@ -210,9 +210,11 @@ public abstract class SpleefArena implements ISpleefArena {
 				if (COUNTDOWN_COUNTER[0] == 0) {
 					countdownIsActive = false;					
 					if (IN_LOBBY) {
-						fillArena(); 
+						fillArena();
+						FREE_SPAWN_LOCATIONS.clear();
+						FREE_SPAWN_LOCATIONS.addAll(SPAWNLOCATIONS);
 						for (UUID uuidPlayer : PLAYERS) {
-							Player player = Bukkit.getPlayer(uuidPlayer);
+							Player player = Bukkit.getPlayer(uuidPlayer);							
 							teleportToArena(player);							
 						}
 						status = GameStatus.COUNTDOWN_IN_ARENA_AFTER_LOBBY;
