@@ -135,8 +135,9 @@ public abstract class SpleefArena implements ISpleefArena {
 		}
 		
 		player.setFoodLevel(20);
+        player.setMaxHealth(20D);
 		player.setHealth(20D);
-		player.setMaxHealth(20D);
+
 		
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
@@ -157,8 +158,9 @@ public abstract class SpleefArena implements ISpleefArena {
 		player.teleport(spawnLoc.toLocation(getWorld()));
 		
 		player.setFoodLevel(20);
+        player.setMaxHealth(20D);
 		player.setHealth(20D);
-		player.setMaxHealth(20D);
+
 		
 		if (player.getGameMode() != GameMode.SURVIVAL) {
 			player.setGameMode(GameMode.SURVIVAL);
